@@ -25,7 +25,6 @@ std::tuple<vec_complex_num, vec_complex_num> split_evens_and_odds(vec_complex_nu
     size_t j;
     for(k = 0, j = 0; k < size_vec; k+=2, j++)
     {
-        std::cout << "k is: " << i << " j is: " << j << std::endl;
         evens[j] = original_vec[k]; 
         odds[j] = original_vec[k+1]; 
     }
@@ -93,58 +92,18 @@ void fft (vec_complex_num &x)
 int main ()
 {
     // Get the tuple of vectors from the function
-    vec_complex_num input = {7.0, 9.0, 11.0, 2.0};
-    auto result = split_evens_and_odds(input);
-
-    // Extract the vectors from the tuple
-    vec_complex_num evens = std::get<0>(result);
-    vec_complex_num odds = std::get<1>(result);
-
-    // Print the elements of the evens vector
-    std::cout << "Evens:" << std::endl;
-    for(const auto& num : evens)
-    {
-        std::cout << num.real() << " + " << num.imag() << "i" << std::endl;
-    }
-
-    // Print the elements of the odds vector
-    std::cout << "Odds:" << std::endl;
-    for(const auto& num : odds)
-    {
-        std::cout << num.real() << " + " << num.imag() << "i" << std::endl;
-    }
-
-    std::cout << "Even twiddle factors" << std::endl;
-    auto even_twiddle_factors = get_twiddle_factors(evens.size()); 
-    for(const auto& num : even_twiddle_factors)
-    {
-        std::cout << num.real() << " + " << num.imag() << "i" << std::endl;
-    }
-
-    std::cout << "Odd twiddle factors" << std::endl;
-    auto odd_twiddle_factors = get_twiddle_factors(odds.size()); 
-    for(const auto& num : odd_twiddle_factors)
-    {
-        std::cout << num.real() << " + " << num.imag() << "i" << std::endl;
-    }
-
-    std::cout << "Input twiddle factors" << std::endl;
-    auto input_twiddle_factors = get_twiddle_factors(input.size()); 
-    for(const auto& num : input_twiddle_factors)
-    {
-        std::cout << num.real() << " + " << num.imag() << "i" << std::endl;
-    }
+    vec_complex_num x = {7.0, 9.0, 11.0, 2.0};
 
     std::cout << "Input vector" << std::endl;
-    for(const auto& num : input)
+    for(const auto& num : x)
     {
         std::cout << num.real() << " + " << num.imag() << "i" << std::endl;
     }
 
-    fft(input);
+    fft(x);
 
     std::cout << "fft vector" << std::endl;
-    for(const auto& num : input)
+    for(const auto& num : x)
     {
         std::cout << num.real() << " + " << num.imag() << "i" << std::endl;
     }
