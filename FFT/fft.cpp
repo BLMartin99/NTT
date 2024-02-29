@@ -36,7 +36,7 @@ std::tuple<vec_complex_num, vec_complex_num> split_evens_and_odds(vec_complex_nu
 complex_num compute_twiddle_factor(size_t k, size_t N)
 { 
     complex_num pi (M_PI, 0.0);
-    return std::exp((complex_num(2.0, 0.0)*pi*i*complex_num((double)k, 0.0))/complex_num((double)N, 0.0));
+    return std::exp((complex_num(-2.0, 0.0)*pi*i*complex_num((double)k, 0.0))/complex_num((double)N, 0.0));
 }
 
 vec_complex_num get_twiddle_factors(size_t N)
