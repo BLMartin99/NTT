@@ -44,12 +44,50 @@ vec_complex_num get_twiddle_factors(size_t N)
     vec_complex_num vec_twiddle_factors(N);
 
     size_t k;
-    for(k = 0; k < N; k++)
+    for(k = 0; k < N/2; k++)
     {
-       vec_twiddle_factors[k] = compute_twiddle_factor(k, N); 
+       vec_twiddle_factors[k] = compute_twiddle_factor(k, N);
     }
 
     return vec_twiddle_factors;
+}
+
+void fft (vec_complex_num &x)
+{
+    size_t N = x.size();
+
+    if(N == 1)
+    {
+        return;
+    }
+    else
+    {
+        // Split into even and odd
+        auto result = split_evens_and_odds(x);
+
+        // Extract the vectors from the tuple
+        vec_complex_num evens = std::get<0>(result);
+        vec_complex_num odds = std::get<1>(result);
+
+        // Recurse
+        fft(evens);
+        fft(odds);
+
+        vec_complex_num vec_of_twiddle_factors = get_twiddle_factors(N);
+
+        for(size_t k = 0; k < N/2; k++)
+        {
+            // Get twiddle factor from collection of twiddle factors
+            complex_num twiddle_factor = vec_of_twiddle_factors[k];
+
+            // Odd times twiddle factor
+            complex_num temp = odds[k]*twiddle_factor;
+
+            // Place in x
+            x[k] = evens[k] + temp;
+            x[k + N/2] = evens[k] - temp;
+        }
+    }
 }
 
 int main ()
@@ -96,6 +134,21 @@ int main ()
     {
         std::cout << num.real() << " + " << num.imag() << "i" << std::endl;
     }
+
+    std::cout << "Input vector" << std::endl;
+    for(const auto& num : input)
+    {
+        std::cout << num.real() << " + " << num.imag() << "i" << std::endl;
+    }
+
+    fft(input);
+
+    std::cout << "fft vector" << std::endl;
+    for(const auto& num : input)
+    {
+        std::cout << num.real() << " + " << num.imag() << "i" << std::endl;
+    }
+
 
    return 0;
 }
