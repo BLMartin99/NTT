@@ -51,11 +51,12 @@ vec_complex_num get_twiddle_factors(size_t N)
     return vec_twiddle_factors;
 }
 
-uint32_t bit_reversal(uint32_t num, uint32_t log2N)
+uint32_t bit_reversal(uint32_t num)
 {
     uint32_t reverse = 0;
+    uint32_t log2N = round(log2(num));
     size_t j;
-    for(j = 0; j < log2N; j++)
+    for(j = 0; j <= log2N; j++)
     {
         reverse <<= 1;
         reverse |= (num & 1);
@@ -77,7 +78,7 @@ int main ()
     // N = 4;
     // log2(4) = 2
 
-    uint32_t temp = bit_reversal(7, 3);
+    uint32_t temp = bit_reversal(217);
     std::cout << temp << std::endl;
     // Get the tuple of vectors from the function
     /*
