@@ -11,7 +11,7 @@ typedef std::vector<complex_num> vec_complex_num;
 complex_num compute_twiddle_factor(size_t m)
 { 
     complex_num pi (M_PI, 0.0);
-    return std::exp((complex_num(-2.0, 0.0)*pi*i, 0.0)/complex_num((double)m, 0.0));
+    return std::exp(-2.0*pi*i/static_cast<double>(m));
 }
 
 uint32_t bit_reversal(uint32_t num, size_t N)
@@ -105,31 +105,21 @@ int main ()
     //uint32_t temp = bit_reversal(7, 8);
     //std::cout << temp << std::endl;
     // Get the tuple of vectors from the function
-    vec_complex_num x = {0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0};
+    vec_complex_num a = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0};
 
-    vec_complex_num vec_return = vec_bit_reversal(x);
-
-    std::cout << "LUT" << std::endl;
-    for(const auto& num : vec_return)
-    {
-        std::cout << num.real() << " + " << num.imag() << "i" << std::endl;
-    }
-
-    /*
     std::cout << "Input vector" << std::endl;
-    for(const auto& num : x)
+    for(const auto& num : a)
     {
         std::cout << num.real() << " + " << num.imag() << "i" << std::endl;
     }
 
-    fft(x);
+    vec_complex_num A = fft(a);
 
     std::cout << "fft vector" << std::endl;
-    for(const auto& num : x)
+    for(const auto& num : A)
     {
         std::cout << num.real() << " + " << num.imag() << "i" << std::endl;
     }
-    */
 
    return 0;
 }
