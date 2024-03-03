@@ -62,16 +62,36 @@ uint32_t bit_reversal(uint32_t num, size_t N)
     uint32_t reverse = 0;
     uint32_t log2N = log2(N);
     size_t j; 
-    for(j = 0; j <= log2N; j++)
+    for(j = 0; j < log2N; j++)
     {
-        std::cout << "reverse: " << reverse << " iter: " << j << std::endl;
         reverse <<= 1;
         reverse |= (num & 1);
-        std::cout << "reverse: " << reverse << " iter: " << j << std::endl;
         num >>= 1;
     }
 
     return reverse;
+}
+
+vec_complex_num vec_bit_reversal(vec_complex_num x)
+{
+    size_t N = x.size();
+
+    if(N % 2 != 0)
+    {
+        std::cout << "Sample size should be an even number" << std::endl;
+        std::terminate();
+    }
+
+    vec_complex_num vec_reversed(N);
+    uint32_t reversed_index;
+    size_t j;
+    for (j = 0; j < N; j++)
+    {
+       reversed_index = bit_reversal(j, N);
+       vec_reversed[reversed_index] = x[j]; 
+    }
+
+    return vec_reversed;
 }
 
 /*
@@ -81,17 +101,26 @@ void fft (vec_complex_num &x)
 }
 */
 
-vec_
 
 int main ()
 {
     // N = 4;
     // log2(4) = 2
 
-    uint32_t temp = bit_reversal(7, 8);
-    std::cout << temp << std::endl;
+    //uint32_t temp = bit_reversal(7, 8);
+    //std::cout << temp << std::endl;
     // Get the tuple of vectors from the function
     vec_complex_num x = {0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0};
+
+    vec_complex_num vec_return = vec_bit_reversal(x);
+
+    std::cout << "LUT" << std::endl;
+    for(const auto& num : vec_return)
+    {
+        std::cout << num.real() << " + " << num.imag() << "i" << std::endl;
+    }
+
+
 
     /*
     std::cout << "Input vector" << std::endl;
