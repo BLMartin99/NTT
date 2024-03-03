@@ -51,15 +51,23 @@ vec_complex_num get_twiddle_factors(size_t N)
     return vec_twiddle_factors;
 }
 
-uint32_t bit_reversal(uint32_t num)
+uint32_t bit_reversal(uint32_t num, size_t N)
 {
+    if(N % 2 != 0)
+    {
+        std::cout << "Sample size should be an even number" << std::endl;
+        std::terminate();
+    }
+
     uint32_t reverse = 0;
-    uint32_t log2N = round(log2(num));
-    size_t j;
+    uint32_t log2N = log2(N);
+    size_t j; 
     for(j = 0; j <= log2N; j++)
     {
+        std::cout << "reverse: " << reverse << " iter: " << j << std::endl;
         reverse <<= 1;
         reverse |= (num & 1);
+        std::cout << "reverse: " << reverse << " iter: " << j << std::endl;
         num >>= 1;
     }
 
@@ -73,17 +81,19 @@ void fft (vec_complex_num &x)
 }
 */
 
+vec_
+
 int main ()
 {
     // N = 4;
     // log2(4) = 2
 
-    uint32_t temp = bit_reversal(217);
+    uint32_t temp = bit_reversal(7, 8);
     std::cout << temp << std::endl;
     // Get the tuple of vectors from the function
-    /*
-    vec_complex_num x = {7.0, 9.0, 11.0, 2.0};
+    vec_complex_num x = {0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0};
 
+    /*
     std::cout << "Input vector" << std::endl;
     for(const auto& num : x)
     {
