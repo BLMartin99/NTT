@@ -99,11 +99,6 @@ vec_complex_num fft (vec_complex_num a)
 
 int main ()
 {
-    // N = 4;
-    // log2(4) = 2
-
-    //uint32_t temp = bit_reversal(7, 8);
-    //std::cout << temp << std::endl;
     // Get the tuple of vectors from the function
     vec_complex_num a = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0};
 
