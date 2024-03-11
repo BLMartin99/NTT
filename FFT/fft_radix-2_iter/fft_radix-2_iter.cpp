@@ -1,12 +1,26 @@
-#include <cmath> 
-#include <complex>
-#include <iostream>
-#include <tuple>
-#include <vector>
+#include "fft_radix-2_iter.h" 
 
-typedef std::complex<double> complex_num;
-const complex_num i (0.0, 1.0); // imaginary number
-typedef std::vector<complex_num> vec_complex_num;
+int main ()
+{
+    // Get the tuple of vectors from the function
+    vec_complex_num a = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0};
+
+    std::cout << "Input vector" << std::endl;
+    for(const auto& num : a)
+    {
+        std::cout << num.real() << " + " << num.imag() << "i" << std::endl;
+    }
+
+    vec_complex_num A = fft(a);
+
+    std::cout << "fft vector" << std::endl;
+    for(const auto& num : A)
+    {
+        std::cout << num.real() << " + " << num.imag() << "i" << std::endl;
+    }
+
+   return 0;
+}
 
 complex_num compute_twiddle_factor(size_t m)
 { 
@@ -67,7 +81,14 @@ vec_complex_num fft (vec_complex_num a)
 
     // Reverse bit LUT
     vec_complex_num A = vec_bit_reversal(a);
-    
+
+    std::cout << "Input vector reversed" << std::endl;
+    for(const auto& num : A)
+    {
+        std::cout << num.real() << " + " << num.imag() << "i" << std::endl;
+    }
+
+
     // FFT loop
     size_t s;
     size_t k;
@@ -97,24 +118,4 @@ vec_complex_num fft (vec_complex_num a)
     return A;
 }
 
-int main ()
-{
-    // Get the tuple of vectors from the function
-    vec_complex_num a = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0};
 
-    std::cout << "Input vector" << std::endl;
-    for(const auto& num : a)
-    {
-        std::cout << num.real() << " + " << num.imag() << "i" << std::endl;
-    }
-
-    vec_complex_num A = fft(a);
-
-    std::cout << "fft vector" << std::endl;
-    for(const auto& num : A)
-    {
-        std::cout << num.real() << " + " << num.imag() << "i" << std::endl;
-    }
-
-   return 0;
-}
