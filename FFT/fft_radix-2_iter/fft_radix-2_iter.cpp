@@ -1,4 +1,3 @@
-#include "../types.h"
 #include "fft_radix-2_iter.h" 
 
 int main ()
