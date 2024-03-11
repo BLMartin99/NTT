@@ -1,5 +1,6 @@
 #include "../types.h"
-#include "fft_radix-2_iter.h" 
+#include "../fft_radix-2_iter/fft_radix-2_iter.h" 
+#include "ifft.h"
 
 int main ()
 {
@@ -23,53 +24,10 @@ int main ()
    return 0;
 }
 
-complex_num compute_twiddle_factor(size_t m)
+complex_num ifft_compute_twiddle_factor(size_t m)
 { 
     complex_num pi (M_PI, 0.0);
-    return std::exp(-2.0*pi*i/static_cast<double>(m));
-}
-
-uint32_t bit_reversal(uint32_t num, size_t N)
-{
-    if(N % 2 != 0)
-    {
-        std::cout << "Sample size should be an even number" << std::endl;
-        std::terminate();
-    }
-
-    uint32_t reverse = 0;
-    uint32_t log2N = log2(N);
-    size_t j; 
-    for(j = 0; j < log2N; j++)
-    {
-        reverse <<= 1;
-        reverse |= (num & 1);
-        num >>= 1;
-    }
-
-    return reverse;
-}
-
-vec_complex_num vec_bit_reversal(vec_complex_num a)
-{
-    size_t N = a.size();
-
-    if(N % 2 != 0)
-    {
-        std::cout << "Sample size should be an even number" << std::endl;
-        std::terminate();
-    }
-
-    vec_complex_num vec_reversed(N);
-    uint32_t reversed_index;
-    size_t k;
-    for (k = 0; k < N; k++)
-    {
-       reversed_index = bit_reversal(k, N);
-       vec_reversed[reversed_index] = a[k]; 
-    }
-
-    return vec_reversed;
+    return std::exp(2.0*pi*i/static_cast<double>(m));
 }
 
 vec_complex_num fft (vec_complex_num a)
@@ -116,6 +74,14 @@ vec_complex_num fft (vec_complex_num a)
           }
        }
     }
+
+    size_t size_of_A = A.size();
+    size_t l;
+    for(l = 0; l < size_of_A; l++)
+    {
+        A[l] /= size_of_A;
+    }
+
     return A;
 }
 
