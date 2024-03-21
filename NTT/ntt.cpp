@@ -134,5 +134,6 @@ void ntt (vec_num_t &x, uint32_t root_of_unity, uint32_t modulus)
                 x[j+k+m/2] = mod(u - t, modulus);
             }
         }
+        r++;
     }
 }
