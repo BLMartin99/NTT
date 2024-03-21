@@ -2,12 +2,18 @@
 
 int main ()
 {
-   // Get the tuple of vectors from the function
-   vec_num_t a = {1, 2, 3, 4, 5, 6, 7, 8};
+    // Get the tuple of vectors from the function
+    vec_num_t a = {1, 2, 3, 4, 5, 6, 7, 8};
 
-   vec_num_t A = ntt(a, 17, 3329);
-    
-   return 0;
+    ntt(a, 2, 13);
+
+    std::cout << "NTT output" << std::endl;
+    for(const auto& num : a)
+    {
+        std::cout << num << std::endl;
+    }
+
+    return 0;
 }
 
 uint32_t mod (int32_t x, uint32_t modulus)
@@ -84,7 +90,7 @@ vec_num_t vec_bit_reversal(vec_num_t x)
     return vec_reversed;
 }
 
-vec_num_t ntt (vec_num_t x, uint32_t root_of_unity, uint32_t modulus)
+void ntt (vec_num_t &x, uint32_t root_of_unity, uint32_t modulus)
 {
     // Get size N
     size_t N = x.size();
@@ -104,34 +110,29 @@ vec_num_t ntt (vec_num_t x, uint32_t root_of_unity, uint32_t modulus)
         std::cout << num << std::endl;
     }
 
-
-/*
-    // FFT loop
-    size_t s;
-    size_t k;
-    size_t j;
+    size_t i;
     size_t m;
-    complex_num w_m;
-    complex_num w;
-    complex_num t;
-    complex_num u;
-    for(s = 1; s <= log2N; s++)
+    size_t r;
+    size_t k;
+    uint32_t w;
+    size_t j;
+    uint32_t t;
+    uint32_t u;
+
+    for(i = log2N; i > 1; i --)
     {
-      m = (size_t)std::pow(2.0,(double)s); 
-      w_m = compute_twiddle_factor(true, m);
-       for(k = 0; k < N; k+=m)
-       {
-          w = 1;
-          for(j = 0; j < m/2; j++)
-          {
-            t = w*A[k + j + m/2];
-            u = A[k + j];
-            A[k + j] = u + t;
-            A[k + j + m/2] = u - t;
-            w = w*w_m;
-          }
-       }
+        m = std::pow(2, i);
+        r = 0;
+        for(k = 0; k < N; k++)
+        {
+            w = LUT[r + bit_reversal(m/2, N)]; 
+            for(j = 0; j < m/2; j++)
+            {
+                t = w*x[j+k+m/2];
+                u = x[j+k]; 
+                x[j+k] = mod(u + t, modulus);
+                x[j+k+m/2] = mod(u - t, modulus);
+            }
+        }
     }
-    */
-    return LUT_rev;
 }
