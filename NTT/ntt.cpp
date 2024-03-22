@@ -3,9 +3,9 @@
 int main ()
 {
     // Get the tuple of vectors from the function
-    vec_num_t a = {1, 2, 3, 4, 5, 6, 7, 8};
+    vec_num_t a = {1, 2, 3, 4};
 
-    ntt(a, 2, 13);
+    ntt(a, 2, 5);
 
     std::cout << "NTT output" << std::endl;
     for(const auto& num : a)
@@ -41,7 +41,8 @@ vec_num_t make_LUT(vec_num_t x, uint32_t root_of_unity, uint32_t modulus)
     size_t k;
     for(k = 0; k < N; k++)
     {
-       LUT[k] = mod(std::pow(root_of_unity, k), modulus);  
+        std::cout << root_of_unity << " " << k << " " << std::pow(root_of_unity, k) << std::endl;
+       LUT[k] = std::pow(root_of_unity, k);  
     }
 
     return LUT;
@@ -104,7 +105,7 @@ void ntt (vec_num_t &x, uint32_t root_of_unity, uint32_t modulus)
     // Reverse bit LUT
     vec_num_t LUT_rev = vec_bit_reversal(LUT);
 
-    std::cout << "Input vector reversed" << std::endl;
+    std::cout << "LUT vector reversed" << std::endl;
     for(const auto& num : LUT_rev)
     {
         std::cout << num << std::endl;
@@ -119,13 +120,13 @@ void ntt (vec_num_t &x, uint32_t root_of_unity, uint32_t modulus)
     uint32_t t;
     uint32_t u;
 
-    for(i = log2N; i > 1; i --)
+    for(i = log2N; i > 1; i--)
     {
         m = std::pow(2, i);
         r = 0;
-        for(k = 0; k < N; k++)
+        for(k = 0; k < N; k+=m)
         {
-            w = LUT[r + bit_reversal(m/2, N)]; 
+            w = LUT_rev[r + bit_reversal(m/2, N)]; 
             for(j = 0; j < m/2; j++)
             {
                 t = w*x[j+k+m/2];
@@ -133,8 +134,7 @@ void ntt (vec_num_t &x, uint32_t root_of_unity, uint32_t modulus)
                 x[j+k] = mod(u + t, modulus);
                 x[j+k+m/2] = mod(u - t, modulus);
             }
-
-        r++;
+            r++;
         }
     }
 }
