@@ -3,15 +3,24 @@
 int main ()
 {
     // Get the tuple of vectors from the function
-    vec_num_t a = {1, 2, 3, 4};
+    vec_num_t a = {1, 2, 3, 4, 3, 2, 1, 0};
 
-    vec_num_t A = ntt(a, 2, 5);
+    vec_num_t A = ntt(a, 9, 17);
 
     std::cout << "NTT output" << std::endl;
     for(const auto& num : A)
     {
         std::cout << num << std::endl;
     }
+
+    vec_num_t A_LUT = ntt_LUT(a, 9, 17);
+
+    std::cout << "LUT NTT output" << std::endl;
+    for(const auto& num : A_LUT)
+    {
+        std::cout << num << std::endl;
+    }
+
 
     return 0;
 }
@@ -24,16 +33,11 @@ uint32_t mod (int32_t x, uint32_t modulus)
         x_ = modulus + x; 
     }
 
-    std::cout << "x is: " << x << "x_ is: " << x_ << " modulus is: " << modulus << " mod operation results " << x_ % modulus << std::endl;
-
-
     return x_ % modulus;
 }
 
-vec_num_t make_LUT(vec_num_t x, uint32_t root_of_unity, uint32_t modulus)
+vec_num_t make_LUT(size_t N, uint32_t root_of_unity, uint32_t modulus)
 {
-    size_t N = x.size();
-
     if(N % 2 != 0)
     {
         std::cout << "Sample size should be an even number" << std::endl;
@@ -116,21 +120,59 @@ vec_num_t ntt (vec_num_t x, uint32_t root_of_unity, uint32_t modulus)
     for(m = 2; m <= N; m*=2)
     {
         w_m = mod(std::pow(root_of_unity, N/m), modulus); 
-        std::cout << "w_m: " << w_m << std::endl;
         w = 1;
         for(j = 0; j < m/2; j++)
         {
-        std::cout << "w: " <<  w << std::endl;
             for(k = 0; k < N; k+=m)
             {
-                t = w*A[k+j+m/2];
-                u = A[k+j];
+                t = mod(w*A[k+j+m/2], modulus);
+                u = mod(A[k+j], modulus);
                 A[k+j] = mod(u + t, modulus);
                 A[k+j+m/2] = mod(u - t, modulus);
-                std::cout << "m: " << m << " j: " << j << " k: " << k << " t: " << t << " u: " << u << " u + t: " << mod(u+t, modulus) << " u - t: " << mod(u-t, modulus) << " A[k+j] = A[" << k+j << "] = " <<  mod(u+t, modulus) << " A[k+j+m/2] = A[" << k+j+m/2 << "] = " << mod(u-t, modulus) << std::endl;
+                std::cout << "m: " << m << " j: " << j << " k: " << k << " w " << w << " t: " << t << " u: " << u << " u + t: " << mod(u+t, modulus) << " u - t: " << mod(u-t, modulus) << " A[k+j] = A[" << k+j << "] = " <<  mod(u+t, modulus) << " A[k+j+m/2] = A[" << k+j+m/2 << "] = " << mod(u-t, modulus) << std::endl;
 
             }
-            w *= w_m;
+            w = mod(w*w_m, modulus);
+        }
+    }
+    return A;
+}
+
+vec_num_t ntt_LUT (vec_num_t x, uint32_t root_of_unity, uint32_t modulus)
+{
+    // Get size N
+    size_t N = x.size();
+
+    // Log2(N)
+    size_t log2N = log2(N);
+
+    // Bit reverse a
+    vec_num_t A = vec_bit_reversal(x);
+
+    // Make LUT for w
+    vec_num_t LUT = make_LUT(N, root_of_unity, modulus);
+
+    size_t m; 
+    size_t w_m; 
+    size_t w; 
+    size_t j; 
+    size_t k; 
+    uint32_t t;
+    uint32_t u;
+
+    for(m = 2; m <= N; m*=2)
+    {
+        for(j = 0; j < m/2; j++)
+        {
+            for(k = 0; k < N; k+=m)
+            {
+                t = mod(LUT[j*N/m]*A[k+j+m/2], modulus);
+                u = mod(A[k+j], modulus);
+                A[k+j] = mod(u + t, modulus);
+                A[k+j+m/2] = mod(u - t, modulus);
+                std::cout << "m: " << m << " j: " << j << " k: " << k << " w " << LUT[j*N/m] << " t: " << t << " u: " << u << " u + t: " << mod(u+t, modulus) << " u - t: " << mod(u-t, modulus) << " A[k+j] = A[" << k+j << "] = " <<  mod(u+t, modulus) << " A[k+j+m/2] = A[" << k+j+m/2 << "] = " << mod(u-t, modulus) << std::endl;
+
+            }
         }
     }
     return A;
