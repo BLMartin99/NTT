@@ -5,10 +5,10 @@ int main ()
     // Get the tuple of vectors from the function
     vec_num_t a = {1, 2, 3, 4};
 
-    ntt(a, 2, 5);
+    vec_num_t A = ntt(a, 2, 5);
 
     std::cout << "NTT output" << std::endl;
-    for(const auto& num : a)
+    for(const auto& num : A)
     {
         std::cout << num << std::endl;
     }
@@ -21,10 +21,13 @@ uint32_t mod (int32_t x, uint32_t modulus)
     uint32_t x_ = x;
     if(x < 0)
     {
-        x_ = modulus - x; 
+        x_ = modulus + x; 
     }
 
-    return x % modulus;
+    std::cout << "x is: " << x << "x_ is: " << x_ << " modulus is: " << modulus << " mod operation results " << x_ % modulus << std::endl;
+
+
+    return x_ % modulus;
 }
 
 vec_num_t make_LUT(vec_num_t x, uint32_t root_of_unity, uint32_t modulus)
@@ -41,8 +44,8 @@ vec_num_t make_LUT(vec_num_t x, uint32_t root_of_unity, uint32_t modulus)
     size_t k;
     for(k = 0; k < N; k++)
     {
-        std::cout << root_of_unity << " " << k << " " << std::pow(root_of_unity, k) << std::endl;
-       LUT[k] = std::pow(root_of_unity, k);  
+       std::cout << root_of_unity << " " << k << " " << mod(std::pow(root_of_unity, k), modulus) << std::endl;
+       LUT[k] = mod(std::pow(root_of_unity, k), modulus);  
     }
 
     return LUT;
@@ -91,7 +94,7 @@ vec_num_t vec_bit_reversal(vec_num_t x)
     return vec_reversed;
 }
 
-void ntt (vec_num_t &x, uint32_t root_of_unity, uint32_t modulus)
+vec_num_t ntt (vec_num_t x, uint32_t root_of_unity, uint32_t modulus)
 {
     // Get size N
     size_t N = x.size();
@@ -99,42 +102,36 @@ void ntt (vec_num_t &x, uint32_t root_of_unity, uint32_t modulus)
     // Log2(N)
     size_t log2N = log2(N);
 
-    // Make LUT using root of unity
-    vec_num_t LUT = make_LUT(x, root_of_unity, modulus);
+    // Bit reverse a
+    vec_num_t A = vec_bit_reversal(x);
 
-    // Reverse bit LUT
-    vec_num_t LUT_rev = vec_bit_reversal(LUT);
-
-    std::cout << "LUT vector reversed" << std::endl;
-    for(const auto& num : LUT_rev)
-    {
-        std::cout << num << std::endl;
-    }
-
-    size_t i;
-    size_t m;
-    size_t r;
-    size_t k;
-    uint32_t w;
-    size_t j;
+    size_t m; 
+    size_t w_m; 
+    size_t w; 
+    size_t j; 
+    size_t k; 
     uint32_t t;
     uint32_t u;
 
-    for(i = log2N; i > 1; i--)
+    for(m = 2; m <= N; m*=2)
     {
-        m = std::pow(2, i);
-        r = 0;
-        for(k = 0; k < N; k+=m)
+        w_m = mod(std::pow(root_of_unity, N/m), modulus); 
+        std::cout << "w_m: " << w_m << std::endl;
+        w = 1;
+        for(j = 0; j < m/2; j++)
         {
-            w = LUT_rev[r + bit_reversal(m/2, N)]; 
-            for(j = 0; j < m/2; j++)
+        std::cout << "w: " <<  w << std::endl;
+            for(k = 0; k < N; k+=m)
             {
-                t = w*x[j+k+m/2];
-                u = x[j+k]; 
-                x[j+k] = mod(u + t, modulus);
-                x[j+k+m/2] = mod(u - t, modulus);
+                t = w*A[k+j+m/2];
+                u = A[k+j];
+                A[k+j] = mod(u + t, modulus);
+                A[k+j+m/2] = mod(u - t, modulus);
+                std::cout << "m: " << m << " j: " << j << " k: " << k << " t: " << t << " u: " << u << " u + t: " << mod(u+t, modulus) << " u - t: " << mod(u-t, modulus) << " A[k+j] = A[" << k+j << "] = " <<  mod(u+t, modulus) << " A[k+j+m/2] = A[" << k+j+m/2 << "] = " << mod(u-t, modulus) << std::endl;
+
             }
-            r++;
+            w *= w_m;
         }
     }
+    return A;
 }
