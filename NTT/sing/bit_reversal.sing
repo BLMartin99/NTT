@@ -1,0 +1,33 @@
+LIB "aksaka.lib";
+
+proc bit_reversal(int N, int num)
+{
+    int reverse = 0;
+    bigint log2N = log2(N);
+
+    int j;
+    /*
+"starting num";
+num;
+*/
+    for(j = 1; j <= log2N; j++)
+    {
+ //   "iter";
+   //     j; 
+        reverse = 2*reverse;
+    //    "reverse";
+      //  reverse;
+        if(num % 2 == 1)
+        {
+            reverse++;
+        }
+        //reverse = reverse | (num & 1);
+        //"reverse";
+        //reverse;
+        num = num div 2;
+        //"num";
+        //num;
+        //"------------------------------------";
+    }
+    return(reverse);
+}
