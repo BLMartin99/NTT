@@ -1,9 +1,9 @@
-LIB "get_spec_poly.sing";
+LIB "get_spec_intvec.sing";
 
 ring r = (integer, 17), (x), lp;
 
 intvec ivec_in = 1, 2, 3, 4, 3, 2, 1, 0;
 
-intvec ivec_out = get_spec_poly(ivec_in, 9, 17); 
+intvec ivec_out = get_spec_intvec(ivec_in, 9, 17); 
 
 ivec_out;

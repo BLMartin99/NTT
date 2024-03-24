@@ -1,6 +1,6 @@
 LIB "mod_red.sing";
 
-proc get_spec_poly(intvec ivec_input, int w, int modulus)
+proc get_spec_intvec(intvec ivec_input, int w, int modulus)
 {
    int N = size(ivec_input); 
 
