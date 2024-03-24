@@ -3,7 +3,7 @@ LIB "make_LUT.sing";
 LIB "bit_reversal.sing";
 LIB "get_intvec_bit_reversal.sing";
 
-proc ntt_algo(intvec ivec_in)
+proc ntt_algo(intvec ivec_in, int w /*root of unity*/)
 {
     // Length of input number sequence
     int N = size(ivec_in);
@@ -16,7 +16,39 @@ proc ntt_algo(intvec ivec_in)
 
     // Get log2N
     bigint log2N = log2(N);
-    log2N;
-intvec ivec_ret;
-return(ivec_ret);
+
+    // Bit reverse of input vector
+    intvec ivec_in_rev = get_intvec_bit_reversal(ivec_in);
+
+    // Make LUT for root of unity
+    intvec LUT = make_LUT(N, w); 
+
+    // Loop iterators
+    int m;
+    int m_half;
+    int j;
+    int k;
+
+    // Temp. vars. for calculations
+    poly t;
+    poly u;
+    int w_;
+
+    for(m = 2; m <= N; m = m * 2)
+    {
+        m_half = m div 2;
+        for(j = 1; j <= m_half; j++)
+        {
+            for(k = 1; k <= N; k = k + m)
+            {
+                w_ = LUT[(j-1)*(N div m)+1];
+                t = w_ * ivec_in_rev[(k-1) + (j-1) + m_half + 1];
+                u = ivec_in_rev[(k-1) + (j-1) + 1];
+                ivec_in_rev[(k-1) + (j-1) + 1] = int(u + t);
+                ivec_in_rev[(k-1) + (j-1) + m_half + 1] = int(u - t);
+            }
+        }
+    }
+
+    return(ivec_in_rev);
 }

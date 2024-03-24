@@ -26,4 +26,4 @@ for(i = 1; i <= 8; i++)
 intvec ivec_rev = get_intvec_bit_reversal(ivec_in);
 ivec_rev;
 
-ntt_algo(ivec_in);
+ntt_algo(ivec_in, 9);
