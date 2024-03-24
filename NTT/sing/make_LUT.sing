@@ -1,0 +1,11 @@
+proc make_LUT (int N, int w)
+{
+    int i;
+    intvec LUT;
+    for (i = 1; i <= N; i++)
+    {
+        LUT[i] = int(poly(w^(i-1)));  
+    }
+
+    return(LUT);
+}

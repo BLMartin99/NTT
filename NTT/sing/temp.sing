@@ -1,4 +1,5 @@
 LIB "get_spec_intvec.sing";
+LIB "make_LUT.sing";
 
 ring r = (integer, 17), (x), lp;
 
@@ -7,3 +8,6 @@ intvec ivec_in = 1, 2, 3, 4, 3, 2, 1, 0;
 intvec ivec_out = get_spec_intvec(ivec_in, 9, 17); 
 
 ivec_out;
+
+intvec LUT = make_LUT(size(ivec_in), 9);
+LUT;
