@@ -1,0 +1,39 @@
+LIB "mod.sing";
+
+proc get_spec_poly(intvec ivec_input, int w, int modulus)
+{
+   int N = size(ivec_input); 
+
+   int i;
+   intvec ivec_spec;
+   for(i = 1; i <= N; i++)
+   {
+      ivec_spec[i] = 0;
+   }
+
+   int k;
+   int n;
+   int exp;
+   int w_;
+   int product;
+   string s0;
+   string s1;
+   string s2;
+   for (k = 1; k <= N; k++)
+   { 
+      for (n = 1; n <= N; n++)
+      {
+         exp = mod_red((k-1)*(n-1), modulus); 
+         w_ = mod_red(w^exp, modulus);
+         product = mod_red(ivec_input[n]*w_, modulus);
+         ivec_spec[k] = mod_red(ivec_spec[k] + product, modulus);
+         ivec_spec;
+         //s0 = print(exp,%p);
+         //s1 = print(w^(kn),%p);
+         //s2 = print(ivec_spec,%p);
+         //"exp: " + s0 + " w^(kn) " + s1 + " inv_spec " + s2;
+      }
+   }
+
+   return(ivec_spec);
+}

@@ -1,0 +1,11 @@
+proc mod_red(int x, int modulus)
+{
+    int x_ = x;
+    
+    if(x < 0)
+    {
+        x_ = modulus + x;
+    }
+
+    return(x_ % modulus);
+}
