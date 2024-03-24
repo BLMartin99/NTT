@@ -1,0 +1,17 @@
+LIB "bit_reversal.sing";
+
+proc get_intvec_bit_reversal(intvec ivec_in)
+{
+    int N = size(ivec_in);
+
+    intvec ivec_rev;
+    int i;
+    int index_rev;
+    for(i = 1; i <= N; i++)
+    {
+        index_rev = bit_reversal(N, i-1);
+        index_rev++; // Singular is NOT zero indexed
+        ivec_rev[index_rev] = ivec_in[i];
+    }
+    return(ivec_rev);
+}

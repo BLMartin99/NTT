@@ -1,6 +1,7 @@
 LIB "get_spec_intvec.sing";
 LIB "make_LUT.sing";
 LIB "bit_reversal.sing";
+LIB "get_intvec_bit_reversal.sing";
 
 ring r = (integer, 17), (x), lp;
 
@@ -20,3 +21,6 @@ for(i = 1; i <= 8; i++)
    temp = bit_reversal(8, i-1); 
    temp;
 }
+
+intvec ivec_rev = get_intvec_bit_reversal(ivec_in);
+ivec_rev;
