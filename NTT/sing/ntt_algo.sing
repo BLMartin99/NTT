@@ -1,0 +1,22 @@
+LIB "get_spec_intvec.sing";
+LIB "make_LUT.sing";
+LIB "bit_reversal.sing";
+LIB "get_intvec_bit_reversal.sing";
+
+proc ntt_algo(intvec ivec_in)
+{
+    // Length of input number sequence
+    int N = size(ivec_in);
+
+    if(N % 2 == 1)
+    {
+        "Input sequence length is not even.";
+        quit;
+    }
+
+    // Get log2N
+    bigint log2N = log2(N);
+    log2N;
+intvec ivec_ret;
+return(ivec_ret);
+}
