@@ -4,6 +4,7 @@ proc mod_red(int x, int modulus)
     
     if(x < 0)
     {
+        "here";
         x_ = modulus + x;
     }
 

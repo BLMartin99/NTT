@@ -1,6 +1,6 @@
 LIB "get_spec_poly.sing";
 
-ring r = 17, (x), lp;
+ring r = (integer, 17), (x), lp;
 
 intvec ivec_in = 1, 2, 3, 4, 3, 2, 1, 0;
 
