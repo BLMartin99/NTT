@@ -23,15 +23,8 @@ proc get_spec_poly(intvec ivec_input, int w, int modulus)
          exp = mod_red((k-1)*(n-1), N); 
          w_ = w^exp;
          product = ivec_input[n]*int(w_);
-        product; 
-        if (product >= 17)
-        {
-            "great";
-        }
          ivec_spec[k] = int(poly(ivec_spec[k]) + product);
-         ivec_spec;
       }
-      "------------";
    }
 
    return(ivec_spec);
