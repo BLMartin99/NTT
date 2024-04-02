@@ -9,8 +9,8 @@ module FullAdder (A, B, Cin, C, S);
     wire S_0;
     wire C_1;
 
-    HalfAdder ha_0 (C_0, S_0, A, B); 
-    HalfAdder ha_1 (C_1 , S, S_0, Cin); 
+    HalfAdder ha_0 (.C(C_0), .S(S_0), .A(A), .B(B)); 
+    HalfAdder ha_1 (.C(C_1) , .S(S), .A(S_0), .Cin(Cin)); 
 
     or or_0 (C, C_0, C_1);
 
