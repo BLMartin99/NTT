@@ -1,0 +1,19 @@
+# Benchmark "FullAdder" written by ABC on Tue Apr  2 16:36:58 2024
+.model FullAdder
+.inputs A B Cin
+.outputs C S
+.names A B new_n6_
+11 1
+.names A B new_n7_
+00 1
+.names new_n6_ new_n7_ new_n8_
+00 1
+.names Cin new_n8_ new_n9_
+11 1
+.names new_n6_ new_n9_ C
+00 0
+.names Cin new_n8_ new_n11_
+00 1
+.names new_n9_ new_n11_ S
+00 1
+.end
