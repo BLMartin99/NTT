@@ -1,0 +1,10 @@
+# Benchmark "FullAdder" written by ABC on Tue Apr  2 15:30:46 2024
+.model FullAdder
+.inputs A B Cin
+.outputs C S
+.gate OR2X1    A=new_FullAdder|C_0_ B=new_FullAdder|C_1_ Y=C
+.gate AND2X1   A=A B=B Y=new_FullAdder|C_0_
+.gate XOR2X1   A=A B=B Y=new_FullAdder|S_0_
+.gate AND2X1   A=new_FullAdder|S_0_ B=Cin Y=new_FullAdder|C_1_
+.gate XOR2X1   A=new_FullAdder|S_0_ B=Cin Y=S
+.end
