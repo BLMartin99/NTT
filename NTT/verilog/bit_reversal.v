@@ -1,4 +1,4 @@
-module bit_reversal(num, reverse);
+module bit_reversal (num, reverse);
     input wire [2:0] num;
     output wire [2:0] reverse;
 

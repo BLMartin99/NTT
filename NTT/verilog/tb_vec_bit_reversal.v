@@ -1,5 +1,5 @@
-module vec_bit_reversal(vec_in, vec_out);
-    reg [7:0] vec_in [7:0];
+module vec_bit_reversal();
+    wire [7:0] vec_in [7:0];
     wire [7:0] vec_out [7:0];
 
 vec_bit_reversal uut
