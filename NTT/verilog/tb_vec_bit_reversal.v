@@ -1,6 +1,6 @@
-module vec_bit_reversal();
-    wire [7:0] vec_in [7:0];
-    wire [7:0] vec_out [7:0];
+module tb_vec_bit_reversal();
+    reg [63:0] vec_in;
+    wire [63:0] vec_out;
 
 vec_bit_reversal uut
     (
@@ -9,15 +9,15 @@ vec_bit_reversal uut
     );
 
     initial begin
-        vec_in[0] = 1;
-        vec_in[1] = 2;
-        vec_in[2] = 3;
-        vec_in[3] = 4;
-        vec_in[4] = 5;
-        vec_in[5] = 6;
-        vec_in[6] = 7;
-        vec_in[7] = 8;
-        #1; $display("vec_in: %d %d %d %d %d %d %d %d vec_out: %d %d %d %d %d %d %d %d", vec_in[0], vec_in[1], vec_in[2], vec_in[3], vec_in[4], vec_in[5], vec_in[6], vec_in[7], vec_out[0], vec_out[1], vec_out[2], vec_out[3], vec_out[4], vec_out[5], vec_out[6], vec_out[7]); #1;
+        vec_in[7:0] = 1;
+        vec_in[15:8] = 2;
+        vec_in[23:16] = 3;
+        vec_in[31:24] = 4;
+        vec_in[39:32] = 5;
+        vec_in[47:40] = 6;
+        vec_in[55:48] = 7;
+        vec_in[63:56] = 8;
+        #1; $display("vec_out: %d %d %d %d %d %d %d %d | vec_in: %d %d %d %d %d %d %d %d", vec_out[63:56], vec_out[55:48], vec_out[47:40], vec_out[39:32], vec_out[31:24], vec_out[23:16], vec_out[15:8], vec_out[7:0], vec_in[63:56], vec_in[55:48], vec_in[47:40], vec_in[39:32], vec_in[31:24], vec_in[23:16], vec_in[15:8], vec_in[7:0]); #1;   
     end
 
 endmodule
