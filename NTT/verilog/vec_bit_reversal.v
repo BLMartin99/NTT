@@ -54,7 +54,34 @@ module vec_bit_reversal
     assign vec_out[14] = vec_in[38];
     assign vec_out[15] = vec_in[39];
 
+    // 3'b101 --bit reversal--> 3'b101
+    assign vec_out[40] = vec_in[40];
+    assign vec_out[41] = vec_in[41];
+    assign vec_out[42] = vec_in[42];
+    assign vec_out[43] = vec_in[43];
+    assign vec_out[44] = vec_in[44];
+    assign vec_out[45] = vec_in[45];
+    assign vec_out[46] = vec_in[46];
+    assign vec_out[47] = vec_in[47];
 
+    // 3'b110 --bit reversal--> 3'b011
+    assign vec_out[24] = vec_in[48];
+    assign vec_out[25] = vec_in[49];
+    assign vec_out[26] = vec_in[50];
+    assign vec_out[27] = vec_in[51];
+    assign vec_out[28] = vec_in[52];
+    assign vec_out[29] = vec_in[53];
+    assign vec_out[30] = vec_in[54];
+    assign vec_out[31] = vec_in[55];
 
+    // 3'b111 --bit reversal--> 3'b111
+    assign vec_out[56] = vec_in[56];
+    assign vec_out[57] = vec_in[57];
+    assign vec_out[58] = vec_in[58];
+    assign vec_out[59] = vec_in[59];
+    assign vec_out[60] = vec_in[60];
+    assign vec_out[61] = vec_in[61];
+    assign vec_out[62] = vec_in[62];
+    assign vec_out[63] = vec_in[63];
 
 endmodule
