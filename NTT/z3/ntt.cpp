@@ -21,6 +21,25 @@ int main ()
         std::cout << num << std::endl;
     }
 
+    // Get the tuple of vectors from the function
+    vec_num_t b = {2, 3, 4, 3, 2, 1, 0};
+
+    vec_num_t B = ntt(b, 9, 17);
+
+    std::cout << "NTT output" << std::endl;
+    for(const auto& num : B)
+    {
+        std::cout << num << std::endl;
+    }
+
+    vec_num_t B_LUT = ntt_LUT(b, 9, 17);
+
+    std::cout << "LUT NTT output" << std::endl;
+    for(const auto& num : B_LUT)
+    {
+        std::cout << num << std::endl;
+    }
+
 
     return 0;
 }
@@ -38,12 +57,6 @@ uint32_t mod (int32_t x, uint32_t modulus)
 
 vec_num_t make_LUT(size_t N, uint32_t root_of_unity, uint32_t modulus)
 {
-    if(N % 2 != 0)
-    {
-        std::cout << "Sample size should be an even number" << std::endl;
-        std::terminate();
-    }
-
     vec_num_t LUT(N);
     size_t k;
     for(k = 0; k < N; k++)
@@ -57,12 +70,6 @@ vec_num_t make_LUT(size_t N, uint32_t root_of_unity, uint32_t modulus)
 
 uint32_t bit_reversal(uint32_t num, size_t N)
 {
-    if(N % 2 != 0)
-    {
-        std::cout << "Sample size should be an even number" << std::endl;
-        std::terminate();
-    }
-
     uint32_t reverse = 0;
     uint32_t log2N = log2(N);
     size_t j; 
@@ -80,12 +87,6 @@ vec_num_t vec_bit_reversal(vec_num_t x)
 {
     size_t N = x.size();
 
-    if(N % 2 != 0)
-    {
-        std::cout << "Sample size should be an even number" << std::endl;
-        std::terminate();
-    }
-
     vec_num_t vec_reversed(N);
     uint32_t reversed_index;
     size_t k;
@@ -102,6 +103,12 @@ vec_num_t ntt (vec_num_t x, uint32_t root_of_unity, uint32_t modulus)
 {
     // Get size N
     size_t N = x.size();
+
+    if(N % 2 != 0)
+    {
+        std::cout << "Sample size should be an even number" << std::endl;
+        std::terminate();
+    }
 
     // Log2(N)
     size_t log2N = log2(N);
@@ -142,6 +149,12 @@ vec_num_t ntt_LUT (vec_num_t x, uint32_t root_of_unity, uint32_t modulus)
 {
     // Get size N
     size_t N = x.size();
+
+    if(N % 2 != 0)
+    {
+        std::cout << "Sample size should be an even number" << std::endl;
+        std::terminate();
+    }
 
     // Log2(N)
     size_t log2N = log2(N);
