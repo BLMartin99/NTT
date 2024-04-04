@@ -1,4 +1,8 @@
+/*
+ * g++ -o ntt ntt.cpp /usr/local/lib/libz3.so
+ */
 #include "ntt.h" 
+#include <z3++.h>
 
 int main ()
 {
@@ -21,26 +25,6 @@ int main ()
         std::cout << num << std::endl;
     }
 
-    // Get the tuple of vectors from the function
-    vec_num_t b = {2, 3, 4, 3, 2, 1, 0};
-
-    vec_num_t B = ntt(b, 9, 17);
-
-    std::cout << "NTT output" << std::endl;
-    for(const auto& num : B)
-    {
-        std::cout << num << std::endl;
-    }
-
-    vec_num_t B_LUT = ntt_LUT(b, 9, 17);
-
-    std::cout << "LUT NTT output" << std::endl;
-    for(const auto& num : B_LUT)
-    {
-        std::cout << num << std::endl;
-    }
-
-
     return 0;
 }
 
@@ -61,7 +45,7 @@ vec_num_t make_LUT(size_t N, uint32_t root_of_unity, uint32_t modulus)
     size_t k;
     for(k = 0; k < N; k++)
     {
-       std::cout << root_of_unity << " " << k << " " << mod(std::pow(root_of_unity, k), modulus) << std::endl;
+       // std::cout << root_of_unity << " " << k << " " << mod(std::pow(root_of_unity, k), modulus) << std::endl;
        LUT[k] = mod(std::pow(root_of_unity, k), modulus);  
     }
 
@@ -136,7 +120,7 @@ vec_num_t ntt (vec_num_t x, uint32_t root_of_unity, uint32_t modulus)
                 u = mod(A[k+j], modulus);
                 A[k+j] = mod(u + t, modulus);
                 A[k+j+m/2] = mod(u - t, modulus);
-                std::cout << "m: " << m << " j: " << j << " k: " << k << " w " << w << " t: " << t << " u: " << u << " u + t: " << mod(u+t, modulus) << " u - t: " << mod(u-t, modulus) << " A[k+j] = A[" << k+j << "] = " <<  mod(u+t, modulus) << " A[k+j+m/2] = A[" << k+j+m/2 << "] = " << mod(u-t, modulus) << std::endl;
+                // std::cout << "m: " << m << " j: " << j << " k: " << k << " w " << w << " t: " << t << " u: " << u << " u + t: " << mod(u+t, modulus) << " u - t: " << mod(u-t, modulus) << " A[k+j] = A[" << k+j << "] = " <<  mod(u+t, modulus) << " A[k+j+m/2] = A[" << k+j+m/2 << "] = " << mod(u-t, modulus) << std::endl;
 
             }
             w = mod(w*w_m, modulus);
@@ -183,7 +167,7 @@ vec_num_t ntt_LUT (vec_num_t x, uint32_t root_of_unity, uint32_t modulus)
                 u = mod(A[k+j], modulus);
                 A[k+j] = mod(u + t, modulus);
                 A[k+j+m/2] = mod(u - t, modulus);
-                std::cout << "m: " << m << " j: " << j << " k: " << k << " w " << LUT[j*N/m] << " t: " << t << " u: " << u << " u + t: " << mod(u+t, modulus) << " u - t: " << mod(u-t, modulus) << " A[k+j] = A[" << k+j << "] = " <<  mod(u+t, modulus) << " A[k+j+m/2] = A[" << k+j+m/2 << "] = " << mod(u-t, modulus) << std::endl;
+                // std::cout << "m: " << m << " j: " << j << " k: " << k << " w " << LUT[j*N/m] << " t: " << t << " u: " << u << " u + t: " << mod(u+t, modulus) << " u - t: " << mod(u-t, modulus) << " A[k+j] = A[" << k+j << "] = " <<  mod(u+t, modulus) << " A[k+j+m/2] = A[" << k+j+m/2 << "] = " << mod(u-t, modulus) << std::endl;
 
             }
         }
