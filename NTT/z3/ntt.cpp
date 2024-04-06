@@ -127,10 +127,7 @@ z3::expr_vector make_LUT(int N, z3::expr root_of_unity, z3::expr modulus, z3::co
         std::cout << "value: " << value << std::endl;
         z3::expr mod_value = mod(value, modulus, ctx, s);
         std::cout << "Mod value: " << mod_value << std::endl;
-        z3::expr Nth_root_of_unity = ctx.bv_val(mod_value, 32);
-        std::cout << "Nth root" << Nth_root_of_unity << " root of unity: " << root_of_unity << " modulus: " << modulus << std::endl;
-        LUT.push_back(Nth_root_of_unity);  
-        std::cout << "Nth root" << Nth_root_of_unity << std::endl;
+        LUT.push_back(mod_value);  
     }
 
     return LUT;
