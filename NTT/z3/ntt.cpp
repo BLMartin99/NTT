@@ -55,15 +55,15 @@ int main ()
         z3::expr result_mod = m.eval(mod_value);
 
         std::cout << "Result of " << dividend << " % " << modulus << " using mod: " << result_mod << std::endl;
-        /*
+
+        
         std::cout << "Result of make_LUT:" << std::endl;
+        std::cout << "Size of make_LUT: " << vec_temp.size() << std::endl;
         int i;
         for(i = 0; i < vec_temp.size(); i++)
         {
-            z3::expr val = m.eval(vec_temp[i]);
-            std::cout << "Index: " << i << " root of unity " << val << std::endl;
+            std::cout << "Index: " << i << " root of unity " << vec_temp[i] << std::endl;
         }
-        */
     }
     else
     {
@@ -96,7 +96,7 @@ z3::expr mod(z3::expr dividend, z3::expr modulus, z3::context &ctx, z3::solver &
     z3::expr remainder = adjusted_dividend - quotient * modulus;
 
     //---------- Add constraints to solver----------
-    std::cout << "remainder: " << remainder << std::endl;
+
     // remainders must never be below zero
     s.add(remainder >= zero);
 
@@ -111,23 +111,22 @@ z3::expr_vector make_LUT(int N, z3::expr root_of_unity, z3::expr modulus, z3::co
     z3::expr_vector LUT(ctx);
 
     // Resize the lookup table to be size N
-    LUT.resize(N);
 
     // Declare one
     z3::expr one = ctx.bv_val(1, 32);
-    std::cout << "here" << std::endl;
+    std::cout << one << std::endl;
 
     // Iterate for the N-th root of unity
-    int k;
-    int i;
-    z3::expr Nth_root_of_unity = one;
-    LUT.push_back(Nth_root_of_unity);  
+    int k = 0;
+    LUT.push_back(one);
+
+    //std::cout << LUT[0] << std::endl;
     for(k = 1; k < N; k++)
     {
-    std::cout << "here 2" << std::endl;
-        Nth_root_of_unity = mod(Nth_root_of_unity * root_of_unity, modulus, ctx, s);
+        z3::expr Nth_root_of_unity = ctx.bv_val(mod(LUT[k-1] * root_of_unity, modulus, ctx, s), 32);
         std::cout << "Nth root" << Nth_root_of_unity << std::endl;
         LUT.push_back(Nth_root_of_unity);  
+        std::cout << "Nth root" << Nth_root_of_unity << std::endl;
     }
 
     return LUT;
