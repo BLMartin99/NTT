@@ -2,11 +2,14 @@
  * g++ -o ntt ntt.cpp /usr/local/lib/libz3.so
  */
 #include "ntt.h" 
-#include <z3++.h>
 
 int main ()
 {
+    z3::context ctx;
+
+    z3::solver s(ctx);
     // Get the tuple of vectors from the function
+    /*
     vec_num_t a = {1, 2, 3, 4, 3, 2, 1, 0};
 
     vec_num_t A = ntt(a, 9, 17);
@@ -24,21 +27,51 @@ int main ()
     {
         std::cout << num << std::endl;
     }
+    */
+    // 8-bit bit-vector -- allow -128 to 127
+    z3::expr dividend = ctx.bv_const("dividend", 8);
+    // Set to a 8-bit value -2
+    dividend = ctx.bv_val(-15, 8);
+
+    // 8-bit bit-vector -- allow -128 to 127
+    z3::expr modulus = ctx.bv_const("modulus", 8);
+    // Set to a 8-bit value
+    modulus = ctx.bv_val(17, 8);
+
+    // Call mod
+    z3::expr mod_value = mod(dividend, modulus, ctx, s);
+
+    if (s.check() == z3::sat)
+    {
+        z3::model m = s.get_model();
+        z3::expr result = m.eval(mod_value);
+
+        std::cout << "Result of " << dividend << " % 5 using mod: " << result << std::endl;
+    }
+    else
+    {
+        std::cout << "Unsat" << std::endl;
+    }
 
     return 0;
 }
 
-uint32_t mod (int32_t x, uint32_t modulus)
-{
-    uint32_t x_ = x;
-    if(x < 0)
-    {
-        x_ = modulus + x; 
-    }
+z3::expr mod(z3::expr dividend, z3::expr modulus, z3::context& ctx, z3::solver &s) {
+    // Compute the remainder mathematically
+    z3::expr quotient = dividend / modulus;
+    z3::expr remainder = dividend - quotient * modulus;
 
-    return x_ % modulus;
+    // Adjust the remainder to ensure it is non-negative
+    z3::expr zero = ctx.bv_val(0, 8);
+    z3::expr is_negative = dividend < zero;
+    z3::expr adjusted_remainder = ite(is_negative, remainder + modulus, remainder);
+    
+    s.add(adjusted_remainder > zero);
+    s.add(adjusted_remainder < modulus);
+    return adjusted_remainder;
 }
 
+/*
 vec_num_t make_LUT(size_t N, uint32_t root_of_unity, uint32_t modulus)
 {
     vec_num_t LUT(N);
@@ -174,3 +207,4 @@ vec_num_t ntt_LUT (vec_num_t x, uint32_t root_of_unity, uint32_t modulus)
     }
     return A;
 }
+*/
