@@ -43,8 +43,7 @@ int main ()
     z3::expr mod_value = mod(dividend, modulus, ctx, s);
 
     // Check N-th root calculation 
-    z3::expr N = ctx.bv_const("N", 8);
-    N = ctx.bv_val(8, 8);
+    int N = 8;
     z3::expr root_of_unity = ctx.bv_const("root_of_unity", 8);
     root_of_unity = ctx.bv_val(15, 8);
 
@@ -55,7 +54,6 @@ int main ()
     {
         z3::model m = s.get_model();
         z3::expr result_mod = m.eval(mod_value);
-        //z3::expr_vector result_vec = m.eval(vec_temp);
 
         std::cout << "Result of " << dividend << " % " << modulus << " using mod: " << result_mod << std::endl;
         std::cout << "Result of make_LUT:" << std::endl;
@@ -106,7 +104,7 @@ z3::expr mod(z3::expr dividend, z3::expr modulus, z3::context &ctx, z3::solver &
     return remainder;
 }
 
-z3::expr_vector make_LUT(z3::expr N, z3::expr root_of_unity, z3::expr modulus, z3::context &ctx, z3::solver &s)
+z3::expr_vector make_LUT(int N, z3::expr root_of_unity, z3::expr modulus, z3::context &ctx, z3::solver &s)
 {
     // Create lookup table and add it to the context
     z3::expr_vector LUT(ctx);
@@ -116,30 +114,36 @@ z3::expr_vector make_LUT(z3::expr N, z3::expr root_of_unity, z3::expr modulus, z
 
     // Declare one
     z3::expr one = ctx.bv_val(1, 8);
+    std::cout << "here" << std::endl;
 
     // Iterate for the N-th root of unity
     int k;
     int i;
-    for(k = 0; k < N; k++)
+    for(k = 0; k < /*N*/ 4; k++)
     {
+        std::cout << "k: " << k << std::endl;
        // Get root of unity raised to the N-th power 
        // z3 does not have a power function...
        z3::expr Nth_root_of_unity = one; 
        for(i = 0; i <= k; i++)
        {
+        
+        std::cout << "k: " << k << " i: " << i << std::endl;
         if(i == 0)
         {
             Nth_root_of_unity = one;
         }
         else
         {
-            Nth_root_of_unity = Nth_root_of_unity * root_of_unity;
+    std::cout << "here 2" << std::endl;
+            Nth_root_of_unity = mod(Nth_root_of_unity * root_of_unity, modulus, ctx, s);
         }
+        std::cout << "Nth root : " << Nth_root_of_unity << std::endl;
        }
 
-        std::cout << "Nth root before mod: " << Nth_root_of_unity << std::endl;
-       // std::cout << root_of_unity << " " << k << " " << mod(std::pow(root_of_unity, k), modulus) << std::endl;
-       // LUT[k] = mod(std::pow(root_of_unity, k), modulus);  
+        std::cout << "Nth root : " << Nth_root_of_unity << std::endl;
+        
+       LUT.push_back(Nth_root_of_unity);  
     }
 
     return LUT;
