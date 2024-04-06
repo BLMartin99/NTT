@@ -30,26 +30,27 @@ int main ()
     */
 
     // 8-bit bit-vector -- allow -128 to 127
-    z3::expr dividend = ctx.bv_const("dividend", 8);
+    z3::expr dividend = ctx.bv_const("dividend", 32);
     // Set to a 8-bit value -15
-    dividend = ctx.bv_val(-15, 8);
+    dividend = ctx.bv_val(-15, 32);
 
     // 8-bit bit-vector -- allow -128 to 127
-    z3::expr modulus = ctx.bv_const("modulus", 8);
+    z3::expr modulus = ctx.bv_const("modulus", 32);
     // Set to a 8-bit value
-    modulus = ctx.bv_val(17, 8);
+    modulus = ctx.bv_val(17, 32);
 
     // Call mod
     z3::expr mod_value = mod(dividend, modulus, ctx, s);
 
     // Check N-th root calculation 
     int N = 8;
-    z3::expr root_of_unity = ctx.bv_const("root_of_unity", 8);
-    root_of_unity = ctx.bv_val(15, 8);
+    z3::expr root_of_unity = ctx.bv_const("root_of_unity", 32);
+    root_of_unity = ctx.bv_val(15, 32);
     z3::expr_vector vec_temp = make_LUT(N, root_of_unity, modulus, ctx, s);
 
     if (s.check() == z3::sat)
     {
+        std::cout << "Sat" << std::endl;
         z3::model m = s.get_model();
         z3::expr result_mod = m.eval(mod_value);
 
@@ -80,7 +81,7 @@ int main ()
 z3::expr mod(z3::expr dividend, z3::expr modulus, z3::context &ctx, z3::solver &s)
 {
     // Declare zero
-    z3::expr zero = ctx.bv_val(0, 8);
+    z3::expr zero = ctx.bv_val(0, 32);
 
     // "Bool" for negative
     z3::expr is_negative = dividend < zero;
@@ -113,7 +114,7 @@ z3::expr_vector make_LUT(int N, z3::expr root_of_unity, z3::expr modulus, z3::co
     LUT.resize(N);
 
     // Declare one
-    z3::expr one = ctx.bv_val(1, 8);
+    z3::expr one = ctx.bv_val(1, 32);
     std::cout << "here" << std::endl;
 
     // Iterate for the N-th root of unity
