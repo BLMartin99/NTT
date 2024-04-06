@@ -28,9 +28,10 @@ int main ()
         std::cout << num << std::endl;
     }
     */
+
     // 8-bit bit-vector -- allow -128 to 127
     z3::expr dividend = ctx.bv_const("dividend", 8);
-    // Set to a 8-bit value -2
+    // Set to a 8-bit value -15
     dividend = ctx.bv_val(-15, 8);
 
     // 8-bit bit-vector -- allow -128 to 127
@@ -56,19 +57,36 @@ int main ()
     return 0;
 }
 
-z3::expr mod(z3::expr dividend, z3::expr modulus, z3::context& ctx, z3::solver &s) {
-    // Compute the remainder mathematically
-    z3::expr quotient = dividend / modulus;
-    z3::expr remainder = dividend - quotient * modulus;
-
-    // Adjust the remainder to ensure it is non-negative
+/*
+ * Modulo of dividend. 
+ * If dividend is negative: (modulus + dividend) % modulus
+ * If dividend is not negative: dividend % modulus
+ */
+z3::expr mod(z3::expr dividend, z3::expr modulus, z3::context& ctx, z3::solver &s)
+{
+    // Declare zero
     z3::expr zero = ctx.bv_val(0, 8);
+
+    // "Bool" for negative
     z3::expr is_negative = dividend < zero;
-    z3::expr adjusted_remainder = ite(is_negative, remainder + modulus, remainder);
-    
-    s.add(adjusted_remainder > zero);
-    s.add(adjusted_remainder < modulus);
-    return adjusted_remainder;
+
+    // If negative minus by modulus otherwise just mod  
+    z3::expr adjusted_dividend = ite(is_negative, dividend + modulus, dividend);
+
+    // Get quotient 
+    z3::expr quotient = adjusted_dividend / modulus;
+
+    // Get remainder
+    z3::expr remainder = adjusted_dividend - quotient * modulus;
+
+    //---------- Add constraints to solver----------
+
+    // remainders must never be below zero
+    s.add(remainder >= zero);
+
+    // remainders must never be above the modulus
+    s.add(remainder < modulus);
+    return remainder;
 }
 
 /*
@@ -114,52 +132,6 @@ vec_num_t vec_bit_reversal(vec_num_t x)
     }
 
     return vec_reversed;
-}
-
-vec_num_t ntt (vec_num_t x, uint32_t root_of_unity, uint32_t modulus)
-{
-    // Get size N
-    size_t N = x.size();
-
-    if(N % 2 != 0)
-    {
-        std::cout << "Sample size should be an even number" << std::endl;
-        std::terminate();
-    }
-
-    // Log2(N)
-    size_t log2N = log2(N);
-
-    // Bit reverse a
-    vec_num_t A = vec_bit_reversal(x);
-
-    size_t m; 
-    size_t w_m; 
-    size_t w; 
-    size_t j; 
-    size_t k; 
-    uint32_t t;
-    uint32_t u;
-
-    for(m = 2; m <= N; m*=2)
-    {
-        w_m = mod(std::pow(root_of_unity, N/m), modulus); 
-        w = 1;
-        for(j = 0; j < m/2; j++)
-        {
-            for(k = 0; k < N; k+=m)
-            {
-                t = mod(w*A[k+j+m/2], modulus);
-                u = mod(A[k+j], modulus);
-                A[k+j] = mod(u + t, modulus);
-                A[k+j+m/2] = mod(u - t, modulus);
-                // std::cout << "m: " << m << " j: " << j << " k: " << k << " w " << w << " t: " << t << " u: " << u << " u + t: " << mod(u+t, modulus) << " u - t: " << mod(u-t, modulus) << " A[k+j] = A[" << k+j << "] = " <<  mod(u+t, modulus) << " A[k+j+m/2] = A[" << k+j+m/2 << "] = " << mod(u-t, modulus) << std::endl;
-
-            }
-            w = mod(w*w_m, modulus);
-        }
-    }
-    return A;
 }
 
 vec_num_t ntt_LUT (vec_num_t x, uint32_t root_of_unity, uint32_t modulus)
