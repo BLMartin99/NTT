@@ -42,12 +42,29 @@ int main ()
     // Call mod
     z3::expr mod_value = mod(dividend, modulus, ctx, s);
 
+    // Check N-th root calculation 
+    z3::expr N = ctx.bv_const("N", 8);
+    N = ctx.bv_val(8, 8);
+    z3::expr root_of_unity = ctx.bv_const("root_of_unity", 8);
+    root_of_unity = ctx.bv_val(15, 8);
+
+
+    z3::expr_vector vec_temp = make_LUT(N, root_of_unity, modulus, ctx, s);
+
     if (s.check() == z3::sat)
     {
         z3::model m = s.get_model();
-        z3::expr result = m.eval(mod_value);
+        z3::expr result_mod = m.eval(mod_value);
+        //z3::expr_vector result_vec = m.eval(vec_temp);
 
-        std::cout << "Result of " << dividend << " % 5 using mod: " << result << std::endl;
+        std::cout << "Result of " << dividend << " % " << modulus << " using mod: " << result_mod << std::endl;
+        std::cout << "Result of make_LUT:" << std::endl;
+        int i;
+        for(i = 0; i < vec_temp.size(); i++)
+        {
+            z3::expr val = m.eval(vec_temp[i]);
+            std::cout << "Index: " << i << " root of unity " << val << std::endl;
+        }
     }
     else
     {
@@ -62,7 +79,7 @@ int main ()
  * If dividend is negative: (modulus + dividend) % modulus
  * If dividend is not negative: dividend % modulus
  */
-z3::expr mod(z3::expr dividend, z3::expr modulus, z3::context& ctx, z3::solver &s)
+z3::expr mod(z3::expr dividend, z3::expr modulus, z3::context &ctx, z3::solver &s)
 {
     // Declare zero
     z3::expr zero = ctx.bv_val(0, 8);
@@ -70,7 +87,7 @@ z3::expr mod(z3::expr dividend, z3::expr modulus, z3::context& ctx, z3::solver &
     // "Bool" for negative
     z3::expr is_negative = dividend < zero;
 
-    // If negative minus by modulus otherwise just mod  
+    // If negative dividend then add by modulus else just dividend 
     z3::expr adjusted_dividend = ite(is_negative, dividend + modulus, dividend);
 
     // Get quotient 
@@ -89,20 +106,46 @@ z3::expr mod(z3::expr dividend, z3::expr modulus, z3::context& ctx, z3::solver &
     return remainder;
 }
 
-/*
-vec_num_t make_LUT(size_t N, uint32_t root_of_unity, uint32_t modulus)
+z3::expr_vector make_LUT(z3::expr N, z3::expr root_of_unity, z3::expr modulus, z3::context &ctx, z3::solver &s)
 {
-    vec_num_t LUT(N);
-    size_t k;
+    // Create lookup table and add it to the context
+    z3::expr_vector LUT(ctx);
+
+    // Resize the lookup table to be size N
+    LUT.resize(N);
+
+    // Declare one
+    z3::expr one = ctx.bv_val(1, 8);
+
+    // Iterate for the N-th root of unity
+    int k;
+    int i;
     for(k = 0; k < N; k++)
     {
+       // Get root of unity raised to the N-th power 
+       // z3 does not have a power function...
+       z3::expr Nth_root_of_unity = one; 
+       for(i = 0; i <= k; i++)
+       {
+        if(i == 0)
+        {
+            Nth_root_of_unity = one;
+        }
+        else
+        {
+            Nth_root_of_unity = Nth_root_of_unity * root_of_unity;
+        }
+       }
+
+        std::cout << "Nth root before mod: " << Nth_root_of_unity << std::endl;
        // std::cout << root_of_unity << " " << k << " " << mod(std::pow(root_of_unity, k), modulus) << std::endl;
-       LUT[k] = mod(std::pow(root_of_unity, k), modulus);  
+       // LUT[k] = mod(std::pow(root_of_unity, k), modulus);  
     }
 
     return LUT;
 }
 
+/*
 uint32_t bit_reversal(uint32_t num, size_t N)
 {
     uint32_t reverse = 0;
