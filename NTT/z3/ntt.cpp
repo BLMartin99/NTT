@@ -8,31 +8,11 @@ int main ()
     z3::context ctx;
 
     z3::solver s(ctx);
-    // Get the tuple of vectors from the function
-    /*
-    vec_num_t a = {1, 2, 3, 4, 3, 2, 1, 0};
-
-    vec_num_t A = ntt(a, 9, 17);
-
-    std::cout << "NTT output" << std::endl;
-    for(const auto& num : A)
-    {
-        std::cout << num << std::endl;
-    }
-
-    vec_num_t A_LUT = ntt_LUT(a, 9, 17);
-
-    std::cout << "LUT NTT output" << std::endl;
-    for(const auto& num : A_LUT)
-    {
-        std::cout << num << std::endl;
-    }
-    */
 
     // 8-bit bit-vector -- allow -128 to 127
     z3::expr dividend = ctx.bv_const("dividend", 32);
     // Set to a 8-bit value -15
-    dividend = ctx.bv_val(15, 32);
+    dividend = ctx.bv_val(36, 32);
 
     // 8-bit bit-vector -- allow -128 to 127
     z3::expr modulus = ctx.bv_const("modulus", 32);
@@ -62,7 +42,8 @@ int main ()
         int i;
         for(i = 0; i < vec_temp.size(); i++)
         {
-            std::cout << "Index: " << i << " root of unity " << vec_temp[i] << std::endl;
+            z3::expr val = m.eval(vec_temp[i]);
+            std::cout << "Index: " << i << " root of unity " << val << std::endl;
         }
     }
     else
@@ -124,9 +105,9 @@ z3::expr_vector make_LUT(int N, z3::expr root_of_unity, z3::expr modulus, z3::co
     for(k = 1; k < N; k++)
     {
         z3::expr value = LUT[k-1] * root_of_unity;
-        std::cout << "value: " << value << std::endl;
+        std::cout << "root of unity: " << root_of_unity << " value: " << value << std::endl;
         z3::expr mod_value = mod(value, modulus, ctx, s);
-        std::cout << "Mod value: " << mod_value << std::endl;
+        std::cout << "Mod value: " << mod_value << " modulus: " << modulus << std::endl;
         LUT.push_back(mod_value);  
     }
 
