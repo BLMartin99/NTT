@@ -91,24 +91,36 @@ z3::expr_vector make_LUT(int N, z3::expr root_of_unity, z3::expr modulus, z3::co
     // Create lookup table and add it to the context
     z3::expr_vector LUT(ctx);
 
-    // Resize the lookup table to be size N
-
     // Declare one
     z3::expr one = ctx.bv_val(1, 32);
     std::cout << one << std::endl;
 
     // Iterate for the N-th root of unity
-    int k = 0;
+    int k;
     LUT.push_back(one);
-
-    //std::cout << LUT[0] << std::endl;
     for(k = 1; k < N; k++)
     {
         z3::expr value = LUT[k-1] * root_of_unity;
-        std::cout << "root of unity: " << root_of_unity << " value: " << value << std::endl;
         z3::expr mod_value = mod(value, modulus, ctx, s);
-        std::cout << "Mod value: " << mod_value << " modulus: " << modulus << std::endl;
         LUT.push_back(mod_value);  
+    }
+
+    //---------- Add constraints to solver----------
+    
+    // Check that LUT is the given size N
+    z3::expr lut_size = ctx.int_val(LUT.size());
+    z3::expr req_size = ctx.int_val(N);
+    s.add(lut_size == req_size);
+
+    // Check that the pattern repeats for the next Nth roots
+    z3::expr temp_value = mod(LUT[k-1]*root_of_unity, modulus, ctx, s);
+    s.add(temp_value == LUT[0]);
+    
+    int i;
+    for(i = 1; i < N; i++)
+    {
+        temp_value = mod(temp_value*root_of_unity, modulus, ctx, s); 
+        s.add(temp_value == LUT[i]);
     }
 
     return LUT;
