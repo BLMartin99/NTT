@@ -91,6 +91,7 @@ z3::expr mod(z3::expr dividend, z3::expr modulus, z3::context &ctx, z3::solver &
 
     // remainders must never be above the modulus
     s.add(remainder < modulus);
+
     return remainder;
 }
 
@@ -129,7 +130,7 @@ z3::expr_vector make_LUT(int N, z3::expr root_of_unity, z3::expr modulus, z3::co
         temp_value = mod(temp_value*root_of_unity, modulus, ctx, s); 
         s.add(temp_value == LUT[i]);
     }
-
+    
     return LUT;
 }
 
@@ -163,59 +164,55 @@ z3::expr bit_reversal(int num, int N, z3::context &ctx, z3::solver &s)
     size_t j; 
     for(j = 0; j < ilog2N; j++)
     {
-        std::cout << "j: " << j << std::endl;
         // Left shift by one bit
         // (Make room for next bit)
         ireverse <<= 1;
-        std::cout << "ireverse: " << ireverse << std::endl;
         ereverse = ereverse * two;
-        std::cout << "ereverse: " << ereverse << std::endl;
 
+        //---------- Add constraints to solver----------
+
+        // Make sure bit vector and int manipulation match
+        s.add(ireverse == ereverse);
+
+        // Make sure bit vector and int manipulation match
+        s.add(iNum == eNum);
+
+        //----------------------------------------------
+        
         // If odd then the next bit is one
         // Add one
-        s.add(iNum == eNum);
         z3::expr mod_eNum = mod(eNum, two, ctx, s);
         if(iNum % 2 == 1)
         {
-            std::cout << "iNum: " << iNum << std::endl;
-            std::cout << "num lsb is 1" << std::endl;
             ireverse |= (iNum & 1);
             ereverse = ereverse + one;
 
+            //---------- Add constraint to solver----------
+            // Make sure bit vector and int manipulation match
             s.add(mod_eNum == 1);
         }
         else
         {
-            std::cout << "iNum: " << iNum << std::endl;
-            std::cout << "num lsb is 0" << std::endl;
-
+            //---------- Add constraint to solver----------
+            // Make sure bit vector and int manipulation match
             s.add(mod_eNum == 0);
         }
-        std::cout << "ireverse: " << ireverse << std::endl;
-        std::cout << "ereverse: " << ereverse << std::endl;
 
         // Remover lsb (was just added to reverse)
         // Get next lsb
         iNum >>= 1;
         eNum = eNum/two;
-        std::cout << "num: " << iNum << std::endl;
-        std::cout << "-----------------------------------------------------------------------------" << std::endl;
     }
 
+    //---------- Add constraints to solver----------
+    // Make sure bit vector and int manipulation match
     s.add(ereverse == ireverse);
-
-    std::cout << "irev: " << ireverse << std::endl;
-    std::cout << "num: " << num << std::endl;
 
     // Prove that reverse is the reverse of num  
     for (j = 0; j < ilog2N; j++)
     {
-        std::cout << "irev: " << ireverse << " num: " << num << " j: " << j << " ilog2N-1-j: " << ilog2N-1-j << std::endl; 
         z3::expr num_bit = ctx.bv_val(static_cast<int>(((num & (1 << (ilog2N-1-j))) >> ilog2N-1)), 1);
-        std::cout << "num: " << ((num & (1 << (ilog2N-1-j))) >> ilog2N-1) << std::endl;
-        std::cout << "num_bit: " << num_bit << std::endl;
         z3::expr rev_bit = ctx.bv_val(static_cast<int>((ireverse & (1 << j))), 1);
-        std::cout << "rev_bit: " << rev_bit << std::endl;
         s.add(num_bit == rev_bit); 
     }
 
