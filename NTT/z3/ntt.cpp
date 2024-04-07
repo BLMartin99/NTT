@@ -17,7 +17,7 @@ int main ()
     // 8-bit bit-vector -- allow -128 to 127
     z3::expr modulus = ctx.bv_const("modulus", 32);
     // Set to a 8-bit value
-    modulus = ctx.bv_val(2, 32);
+    modulus = ctx.bv_val(17, 32);
 
     // Call mod
     z3::expr mod_value = mod(dividend, modulus, ctx, s);
@@ -31,7 +31,7 @@ int main ()
     // Check bit reversal
     z3::expr temp1 = ctx.bv_const("temp1", 32);
     temp1 = ctx.bv_val(4, 32);
-    z3::expr temp1_br = bit_reversal(temp1, N, ctx, s);
+    z3::expr temp1_br = bit_reversal(3, N, ctx, s);
 
     if (s.check() == z3::sat)
     {
@@ -133,10 +133,19 @@ z3::expr_vector make_LUT(int N, z3::expr root_of_unity, z3::expr modulus, z3::co
     return LUT;
 }
 
-z3::expr bit_reversal(z3::expr num, int N, z3::context &ctx, z3::solver &s)
+z3::expr bit_reversal(int num, int N, z3::context &ctx, z3::solver &s)
 {
+    // Variable for shifting num
+    int32_t iNum = num;
+
+    // Expression to hold iNum (workaround to get into expr form)
+    z3::expr eNum = ctx.bv_val(static_cast<int>(iNum), 32);
+
     // Initialize reverse to equal zero
-    z3::expr reverse = ctx.bv_val(0, 32);
+    int32_t ireverse = 0;
+
+    // Expression to hold ireverse (workaround to get into expr form)
+    z3::expr ereverse = ctx.bv_val(static_cast<int>(ireverse), 32);
 
     // Declare one
     z3::expr one = ctx.bv_val(1, 32);
@@ -148,40 +157,53 @@ z3::expr bit_reversal(z3::expr num, int N, z3::context &ctx, z3::solver &s)
     size_t ilog2N = log2(N);
     std::cout << "Log2N: " << ilog2N << std::endl;
 
+    // Expression to hold log base 2 of N (workaround to get into expr form)
+    z3::expr elog2N = ctx.bv_val(static_cast<int>(ilog2N), 32);
+
     size_t j; 
     for(j = 0; j < ilog2N; j++)
     {
         std::cout << "j: " << j << std::endl;
         // Left shift by one bit
         // (Make room for next bit)
-        reverse = reverse * 2;
-        std::cout << "reverse: " << reverse << std::endl;
+        ireverse <<= 1;
+        std::cout << "ireverse: " << ireverse << std::endl;
+        ereverse = ereverse * two;
+        std::cout << "ereverse: " << ereverse << std::endl;
 
         // If odd then the next bit is one
         // Add one
-        std::cout << "num: " << ctx.bv_val(num, 32) << std::endl;
-        std::cout << "mod: " << mod(num, two, ctx, s) << std::endl;
-        if(mod(num, two, ctx, s) == one)
+        eNum = ctx.bv_val(static_cast<int>(iNum), 32);
+        z3::expr mod_eNum = mod(eNum, two, ctx, s);
+        if(iNum % 2 == 1)
         {
+            std::cout << "iNum: " << iNum << std::endl;
             std::cout << "num lsb is 1" << std::endl;
-            reverse = reverse + 1;
+            ireverse |= (iNum & 1);
+            ereverse = ereverse + one;
+
+            s.add(mod_eNum == 1);
         }
         else
         {
+            std::cout << "iNum: " << iNum << std::endl;
             std::cout << "num lsb is 0" << std::endl;
+
+            s.add(mod_eNum == 0);
         }
-        std::cout << "reverse: " << reverse << std::endl;
+        std::cout << "ireverse: " << ireverse << std::endl;
+        std::cout << "ereverse: " << ereverse << std::endl;
 
         // Remover lsb (was just added to reverse)
         // Get next lsb
-        num = num/2;
-        std::cout << "num: " << num << std::endl;
+        iNum >>= 1;
+        eNum = eNum/two;
+        std::cout << "num: " << iNum << std::endl;
+        std::cout << "-----------------------------------------------------------------------------" << std::endl;
     }
 
-    // Expression to hold log base 2 of N (workaround to get into expr form)
-    z3::expr elog2N = ctx.bv_val(static_cast<int>(ilog2N), 32);
-
-    return reverse;
+    s.add(ereverse == ireverse);
+    return ereverse;
 }
 
 /*
