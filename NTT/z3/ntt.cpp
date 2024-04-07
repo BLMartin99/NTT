@@ -210,8 +210,9 @@ z3::expr bit_reversal(int num, int N, z3::context &ctx, z3::solver &s)
     // Prove that reverse is the reverse of num  
     for (j = 0; j < ilog2N; j++)
     {
-        std::cout << "j: " << j << " ilog2N-1-j: " << ilog2N-1-j << std::endl; 
-        z3::expr num_bit = ctx.bv_val(static_cast<int>((num & (1 >> ilog2N-1-j))), 1);
+        std::cout << "irev: " << ireverse << " num: " << num << " j: " << j << " ilog2N-1-j: " << ilog2N-1-j << std::endl; 
+        z3::expr num_bit = ctx.bv_val(static_cast<int>(((num & (1 << (ilog2N-1-j))) >> ilog2N-1)), 1);
+        std::cout << "num: " << ((num & (1 << (ilog2N-1-j))) >> ilog2N-1) << std::endl;
         std::cout << "num_bit: " << num_bit << std::endl;
         z3::expr rev_bit = ctx.bv_val(static_cast<int>((ireverse & (1 << j))), 1);
         std::cout << "rev_bit: " << rev_bit << std::endl;
