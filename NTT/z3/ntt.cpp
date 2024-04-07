@@ -31,7 +31,7 @@ int main ()
     // Check bit reversal
     z3::expr temp1 = ctx.bv_const("temp1", 32);
     temp1 = ctx.bv_val(4, 32);
-    z3::expr temp1_br = bit_reversal(3, N, ctx, s);
+    z3::expr temp1_br = bit_reversal(4, N, ctx, s);
 
     if (s.check() == z3::sat)
     {
@@ -173,7 +173,7 @@ z3::expr bit_reversal(int num, int N, z3::context &ctx, z3::solver &s)
 
         // If odd then the next bit is one
         // Add one
-        eNum = ctx.bv_val(static_cast<int>(iNum), 32);
+        s.add(iNum == eNum);
         z3::expr mod_eNum = mod(eNum, two, ctx, s);
         if(iNum % 2 == 1)
         {
@@ -203,6 +203,21 @@ z3::expr bit_reversal(int num, int N, z3::context &ctx, z3::solver &s)
     }
 
     s.add(ereverse == ireverse);
+
+    std::cout << "irev: " << ireverse << std::endl;
+    std::cout << "num: " << num << std::endl;
+
+    // Prove that reverse is the reverse of num  
+    for (j = 0; j < ilog2N; j++)
+    {
+        std::cout << "j: " << j << " ilog2N-1-j: " << ilog2N-1-j << std::endl; 
+        z3::expr num_bit = ctx.bv_val(static_cast<int>((num & (1 >> ilog2N-1-j))), 1);
+        std::cout << "num_bit: " << num_bit << std::endl;
+        z3::expr rev_bit = ctx.bv_val(static_cast<int>((ireverse & (1 << j))), 1);
+        std::cout << "rev_bit: " << rev_bit << std::endl;
+        s.add(num_bit == rev_bit); 
+    }
+
     return ereverse;
 }
 
