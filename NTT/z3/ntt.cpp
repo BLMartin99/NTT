@@ -95,6 +95,9 @@ z3::expr mod(z3::expr dividend, z3::expr modulus, z3::context &ctx, z3::solver &
     return remainder;
 }
 
+/*
+ * Returns a lookup table of the Nth roots of unity.
+ */
 z3::expr_vector make_LUT(int N, z3::expr root_of_unity, z3::expr modulus, z3::context &ctx, z3::solver &s)
 {
     // Create lookup table and add it to the context
@@ -134,6 +137,11 @@ z3::expr_vector make_LUT(int N, z3::expr root_of_unity, z3::expr modulus, z3::co
     return LUT;
 }
 
+/*
+ * Reverses the bits based on size N.
+ * Given 6 (decimal) = 3'b110 (binary) and N = 8 -> log2N = 3
+ * Reverse will be 3'b011 (binary) = 3 (decimal)
+ */
 z3::expr bit_reversal(int num, int N, z3::context &ctx, z3::solver &s)
 {
     // Variable for shifting num
