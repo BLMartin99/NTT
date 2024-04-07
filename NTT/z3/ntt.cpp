@@ -12,12 +12,12 @@ int main ()
     // 8-bit bit-vector -- allow -128 to 127
     z3::expr dividend = ctx.bv_const("dividend", 32);
     // Set to a 8-bit value -15
-    dividend = ctx.bv_val(36, 32);
+    dividend = ctx.bv_val(4, 32);
 
     // 8-bit bit-vector -- allow -128 to 127
     z3::expr modulus = ctx.bv_const("modulus", 32);
     // Set to a 8-bit value
-    modulus = ctx.bv_val(17, 32);
+    modulus = ctx.bv_val(2, 32);
 
     // Call mod
     z3::expr mod_value = mod(dividend, modulus, ctx, s);
@@ -27,6 +27,11 @@ int main ()
     z3::expr root_of_unity = ctx.bv_const("root_of_unity", 32);
     root_of_unity = ctx.bv_val(15, 32);
     z3::expr_vector vec_temp = make_LUT(N, root_of_unity, modulus, ctx, s);
+
+    // Check bit reversal
+    z3::expr temp1 = ctx.bv_const("temp1", 32);
+    temp1 = ctx.bv_val(4, 32);
+    z3::expr temp1_br = bit_reversal(temp1, N, ctx, s);
 
     if (s.check() == z3::sat)
     {
@@ -45,6 +50,9 @@ int main ()
             z3::expr val = m.eval(vec_temp[i]);
             std::cout << "Index: " << i << " root of unity " << val << std::endl;
         }
+
+        z3::expr result_temp1_br = m.eval(temp1_br);
+        std::cout << result_temp1_br << std::endl;
     }
     else
     {
@@ -93,7 +101,6 @@ z3::expr_vector make_LUT(int N, z3::expr root_of_unity, z3::expr modulus, z3::co
 
     // Declare one
     z3::expr one = ctx.bv_val(1, 32);
-    std::cout << one << std::endl;
 
     // Iterate for the N-th root of unity
     int k;
@@ -126,22 +133,58 @@ z3::expr_vector make_LUT(int N, z3::expr root_of_unity, z3::expr modulus, z3::co
     return LUT;
 }
 
-/*
-uint32_t bit_reversal(uint32_t num, size_t N)
+z3::expr bit_reversal(z3::expr num, int N, z3::context &ctx, z3::solver &s)
 {
-    uint32_t reverse = 0;
-    uint32_t log2N = log2(N);
+    // Initialize reverse to equal zero
+    z3::expr reverse = ctx.bv_val(0, 32);
+
+    // Declare one
+    z3::expr one = ctx.bv_val(1, 32);
+
+    // Declare 2 
+    z3::expr two = ctx.bv_val(2, 32);
+
+    // Get log base 2 of N (number of bits needed to represent the number)
+    size_t ilog2N = log2(N);
+    std::cout << "Log2N: " << ilog2N << std::endl;
+
     size_t j; 
-    for(j = 0; j < log2N; j++)
+    for(j = 0; j < ilog2N; j++)
     {
-        reverse <<= 1;
-        reverse |= (num & 1);
-        num >>= 1;
+        std::cout << "j: " << j << std::endl;
+        // Left shift by one bit
+        // (Make room for next bit)
+        reverse = reverse * 2;
+        std::cout << "reverse: " << reverse << std::endl;
+
+        // If odd then the next bit is one
+        // Add one
+        std::cout << "num: " << ctx.bv_val(num, 32) << std::endl;
+        std::cout << "mod: " << mod(num, two, ctx, s) << std::endl;
+        if(mod(num, two, ctx, s) == one)
+        {
+            std::cout << "num lsb is 1" << std::endl;
+            reverse = reverse + 1;
+        }
+        else
+        {
+            std::cout << "num lsb is 0" << std::endl;
+        }
+        std::cout << "reverse: " << reverse << std::endl;
+
+        // Remover lsb (was just added to reverse)
+        // Get next lsb
+        num = num/2;
+        std::cout << "num: " << num << std::endl;
     }
+
+    // Expression to hold log base 2 of N (workaround to get into expr form)
+    z3::expr elog2N = ctx.bv_val(static_cast<int>(ilog2N), 32);
 
     return reverse;
 }
 
+/*
 vec_num_t vec_bit_reversal(vec_num_t x)
 {
     size_t N = x.size();
