@@ -31,7 +31,17 @@ int main ()
     // Check bit reversal
     z3::expr temp1 = ctx.bv_const("temp1", 32);
     temp1 = ctx.bv_val(4, 32);
-    z3::expr temp1_br = bit_reversal(4, N, ctx, s);
+    int temp1_br = bit_reversal(3, N, ctx, s);
+
+    // Check bit reversal vector
+    z3::expr_vector x(ctx); 
+    int j;
+    for(j = 0; j < N; j++)
+    {
+        z3::expr temp2 = ctx.bv_val(static_cast<int>(j+1), 32);
+        x.push_back(temp2);
+    }
+    z3::expr_vector vec_br = vec_bit_reversal(x, ctx, s);
 
     if (s.check() == z3::sat)
     {
@@ -51,8 +61,15 @@ int main ()
             std::cout << "Index: " << i << " root of unity " << val << std::endl;
         }
 
-        z3::expr result_temp1_br = m.eval(temp1_br);
-        std::cout << result_temp1_br << std::endl;
+        std::cout << temp1_br << std::endl;
+
+        for(i = 0; i < vec_br.size(); i++)
+        {
+            z3::expr val = m.eval(vec_br[i]);
+            std::cout << "Index: " << i << " val: " << val << std::endl;
+        }
+
+
     }
     else
     {
@@ -142,7 +159,7 @@ z3::expr_vector make_LUT(int N, z3::expr root_of_unity, z3::expr modulus, z3::co
  * Given 6 (decimal) = 3'b110 (binary) and N = 8 -> log2N = 3
  * Reverse will be 3'b011 (binary) = 3 (decimal)
  */
-z3::expr bit_reversal(int num, int N, z3::context &ctx, z3::solver &s)
+int bit_reversal(int num, int N, z3::context &ctx, z3::solver &s)
 {
     // Variable for shifting num
     int32_t iNum = num;
@@ -164,7 +181,6 @@ z3::expr bit_reversal(int num, int N, z3::context &ctx, z3::solver &s)
 
     // Get log base 2 of N (number of bits needed to represent the number)
     size_t ilog2N = log2(N);
-    std::cout << "Log2N: " << ilog2N << std::endl;
 
     // Expression to hold log base 2 of N (workaround to get into expr form)
     z3::expr elog2N = ctx.bv_val(static_cast<int>(ilog2N), 32);
@@ -224,26 +240,47 @@ z3::expr bit_reversal(int num, int N, z3::context &ctx, z3::solver &s)
         s.add(num_bit == rev_bit); 
     }
 
-    return ereverse;
+    return ireverse;
 }
 
-/*
-vec_num_t vec_bit_reversal(vec_num_t x)
+z3::expr_vector vec_bit_reversal(z3::expr_vector x, z3::context &ctx, z3::solver &s)
 {
+    // Declare zero
+    z3::expr zero = ctx.bv_val(0, 32);
+
+    // Declare 2 
+    z3::expr two = ctx.bv_val(2, 32);
+
+    // Size of vector
     size_t N = x.size();
 
-    vec_num_t vec_reversed(N);
-    uint32_t reversed_index;
+    // Expression to hold N (workaround to get into expr form)
+    z3::expr eN = ctx.bv_val(static_cast<int>(N), 32);
+
+    //---------- Add constraint to solver----------
+    // Make sure N is even
+    z3::expr mod_val = mod(eN, two, ctx, s); 
+    s.add(mod_val == zero);
+    //----------------------------------------------
+
+    // Prefill with zero
+    z3::expr_vector vec_reversed(ctx);
     size_t k;
     for (k = 0; k < N; k++)
     {
-       reversed_index = bit_reversal(k, N);
+       vec_reversed.push_back(zero); 
+    }
+
+    for (k = 0; k < N; k++)
+    {
+       int reversed_index = bit_reversal((int)k, (int)N, ctx, s);
        vec_reversed[reversed_index] = x[k]; 
     }
 
     return vec_reversed;
 }
 
+/*
 vec_num_t ntt_LUT (vec_num_t x, uint32_t root_of_unity, uint32_t modulus)
 {
     // Get size N
