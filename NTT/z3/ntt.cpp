@@ -10,27 +10,22 @@ int main ()
     z3::solver s(ctx);
 
     // 8-bit bit-vector -- allow -128 to 127
-    z3::expr dividend = ctx.bv_const("dividend", 32);
     // Set to a 8-bit value -15
-    dividend = ctx.bv_val(4, 32);
+    int dividend = 4;
 
     // 8-bit bit-vector -- allow -128 to 127
-    z3::expr modulus = ctx.bv_const("modulus", 32);
+    int modulus = 17;
     // Set to a 8-bit value
-    modulus = ctx.bv_val(17, 32);
 
     // Call mod
-    z3::expr mod_value = mod(dividend, modulus, ctx, s);
+    int mod_value = mod(dividend, modulus, ctx, s);
 
+    std::cout << "Mod val: " << mod_value << std::endl;
     // Check N-th root calculation 
     int N = 8;
-    z3::expr root_of_unity = ctx.bv_const("root_of_unity", 32);
-    root_of_unity = ctx.bv_val(15, 32);
-    z3::expr_vector vec_temp = make_LUT(N, 15, modulus, ctx, s);
+    std::vector<int> vec_temp = make_LUT(N, 15, modulus, ctx, s);
 
     // Check bit reversal
-    z3::expr temp1 = ctx.bv_const("temp1", 32);
-    temp1 = ctx.bv_val(4, 32);
     int temp1_br = bit_reversal(3, N, ctx, s);
 
     // Check bit reversal vector
@@ -46,7 +41,7 @@ int main ()
     {
         std::cout << "Sat" << std::endl;
         z3::model m = s.get_model();
-        z3::expr result_mod = m.eval(mod_value);
+        int result_mod = mod_value;
 
         std::cout << "Result of " << dividend << " % " << modulus << " using mod: " << result_mod << std::endl;
 
@@ -56,7 +51,7 @@ int main ()
         int i;
         for(i = 0; i < vec_temp.size(); i++)
         {
-            z3::expr val = m.eval(vec_temp[i]);
+            int val = vec_temp[i];
             std::cout << "Index: " << i << " root of unity " << val << std::endl;
         }
 
@@ -83,39 +78,64 @@ int main ()
  * If dividend is negative: (modulus + dividend) % modulus
  * If dividend is not negative: dividend % modulus
  */
-z3::expr mod(z3::expr dividend, z3::expr modulus, z3::context &ctx, z3::solver &s)
+int mod(int dividend, int modulus, z3::context &ctx, z3::solver &s)
 {
+    //---------- Add constraints to solver----------
+    // Expression to hold log base 2 of N (workaround to get into expr form)
+    z3::expr edividend = ctx.bv_val(static_cast<int>(dividend), 32);
+
+    // Expression to hold log base 2 of N (workaround to get into expr form)
+    z3::expr emodulus = ctx.bv_val(static_cast<int>(modulus), 32);
+
     // Declare zero
     z3::expr zero = ctx.bv_val(0, 32);
 
     // "Bool" for negative
     z3::expr is_negative = edividend < zero;
 
-    // If negative dividend then add by modulus else just dividend 
-    z3::expr adjusted_edividend = ite(is_negative, edividend + emodulus, edividend);
+    int idividend = dividend;
 
-    // Get quotient 
-    z3::expr equotient = adjusted_edividend / emodulus;
+    if(dividend < 0)
+    {
+        idividend += modulus;
+        s.add(is_negative == 1);
+    }
+    else
+    {
+        s.add(is_negative == 0);
+    }
 
-    // Get remainder
-    z3::expr eremainder = adjusted_edividend - quotient * modulus;
-
-    //---------- Add constraints to solver----------
+    int iremainder = idividend % modulus;
+ 
+    // Expression to hold iremainder (workaround to get into expr form)
+    z3::expr eremainder = ctx.bv_val(static_cast<int>(iremainder), 32);
 
     // remainders must never be below zero
-    s.add(remainder >= zero);
+    s.add(eremainder >= zero);
 
     // remainders must never be above the modulus
-    s.add(remainder < modulus);
+    s.add(eremainder < modulus);
 
-    return remainder;
+    return iremainder;
 }
 
 /*
  * Returns a lookup table of the Nth roots of unity.
  */
-z3::expr_vector make_LUT(int N, int root_of_unity, z3::expr modulus, z3::context &ctx, z3::solver &s)
+std::vector<int> make_LUT(int N, int root_of_unity, int modulus, z3::context &ctx, z3::solver &s)
 {
+    // Make LUT
+    std::vector<int> iLUT(N);
+    int k;
+    iLUT.push_back(1);
+    for(k = 1; k < N; k++)
+    {
+        int value = iLUT[k-1] * root_of_unity;
+        int mod_value = mod(value, modulus, ctx, s);
+        iLUT.push_back(mod_value);  
+    }
+
+    //---------- Add constraints to solver----------
     // Create lookup table and add it to the context
     z3::expr_vector eLUT(ctx);
 
@@ -125,34 +145,44 @@ z3::expr_vector make_LUT(int N, int root_of_unity, z3::expr modulus, z3::context
     // Expression to hold log base 2 of N (workaround to get into expr form)
     z3::expr eroot_of_unity = ctx.bv_val(static_cast<int>(root_of_unity), 32);
 
-    //---------- Add constraints to solver----------
     // Iterate for the N-th root of unity
-    int k;
-    eLUT.push_back(one);
-    for(k = 1; k < N; k++)
+    for(k = 0; k < N; k++)
     {
-        z3::expr value = eLUT[k-1] * eroot_of_unity;
-        z3::expr mod_value = mod(value, modulus, ctx, s);
-        eLUT.push_back(mod_value);  
+        int value = std::pow(root_of_unity, k);
+        int imod_value = value % modulus; 
+        z3::expr emod_value = ctx.bv_val(static_cast<int>(imod_value), 32);
+        eLUT.push_back(emod_value);  
+    }
+
+    // Check that the LUT matches
+    for(k = 0; k < N; k++)
+    {
+        z3::expr eval = eLUT[k];
+        z3::expr ival =  ctx.bv_val(static_cast<int>(iLUT[k]), 32);
+        s.add(eval == ival);  
     }
 
     // Check that LUT is the given size N
-    z3::expr lut_size = ctx.int_val(eLUT.size());
-    z3::expr req_size = ctx.int_val(N);
+    z3::expr lut_size = ctx.bv_val(static_cast<int>(iLUT.size()), 32);
+    z3::expr req_size = ctx.bv_val(static_cast<int>(N), 32);
     s.add(lut_size == req_size);
 
     // Check that the pattern repeats for the next Nth roots
-    z3::expr temp_value = mod(eLUT[k-1]*eroot_of_unity, modulus, ctx, s);
-    s.add(temp_value == eLUT[0]);
+    int itemp_value = mod(iLUT[k-1]*root_of_unity, modulus, ctx, s);
+    z3::expr etemp_value = ctx.bv_val(static_cast<int>(itemp_value), 32);
+    z3::expr iindex_value = ctx.bv_val(static_cast<int>(iLUT[0]), 32);
+    s.add(etemp_value == iindex_value);
     
     int i;
     for(i = 1; i < N; i++)
     {
-        temp_value = mod(temp_value*eroot_of_unity, modulus, ctx, s); 
-        s.add(temp_value == eLUT[i]);
+        itemp_value = mod(itemp_value*root_of_unity, modulus, ctx, s); 
+        etemp_value = ctx.bv_val(static_cast<int>(itemp_value), 32);
+        iindex_value = ctx.bv_val(static_cast<int>(iLUT[i]), 32);
+        s.add(etemp_value == iindex_value);
     }
     
-    return eLUT;
+    return iLUT;
 }
 
 /*
@@ -206,8 +236,12 @@ int bit_reversal(int num, int N, z3::context &ctx, z3::solver &s)
         
         // If odd then the next bit is one
         // Add one
-        z3::expr mod_eNum = mod(eNum, two, ctx, s);
-        if(iNum % 2 == 1)
+        int mod_iNum = mod(iNum, 2, ctx, s);
+     
+        // Expression to hold log base 2 of N (workaround to get into expr form)
+        z3::expr mod_eNum = ctx.bv_val(static_cast<int>(mod_iNum), 32);
+
+       if(iNum % 2 == 1)
         {
             ireverse |= (iNum & 1);
             ereverse = ereverse + one;
@@ -260,8 +294,10 @@ std::vector<int> vec_bit_reversal(std::vector<int> x, z3::context &ctx, z3::solv
 
     //---------- Add constraint to solver----------
     // Make sure N is even
-    z3::expr mod_val = mod(eN, two, ctx, s); 
-    s.add(mod_val == zero);
+    int imod_val = mod(N, 2, ctx, s); 
+    // Expression to hold N (workaround to get into expr form)
+    z3::expr emod_val = ctx.bv_val(static_cast<int>(imod_val), 32);
+    s.add(emod_val == zero);
     //----------------------------------------------
     
     // Make int vector of size N
