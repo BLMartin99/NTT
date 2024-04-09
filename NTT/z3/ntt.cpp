@@ -34,14 +34,13 @@ int main ()
     int temp1_br = bit_reversal(3, N, ctx, s);
 
     // Check bit reversal vector
-    z3::expr_vector x(ctx); 
+    std::vector<int> x; 
     int j;
     for(j = 0; j < N; j++)
     {
-        z3::expr temp2 = ctx.bv_val(static_cast<int>(j+1), 32);
-        x.push_back(temp2);
+        x.push_back(j+1);
     }
-    z3::expr_vector vec_br = vec_bit_reversal(x, ctx, s);
+    std::vector<int> vec_br = vec_bit_reversal(x, ctx, s);
 
     if (s.check() == z3::sat)
     {
@@ -65,7 +64,7 @@ int main ()
 
         for(i = 0; i < vec_br.size(); i++)
         {
-            z3::expr val = m.eval(vec_br[i]);
+            int val = vec_br[i];
             std::cout << "Index: " << i << " val: " << val << std::endl;
         }
 
@@ -243,7 +242,7 @@ int bit_reversal(int num, int N, z3::context &ctx, z3::solver &s)
     return ireverse;
 }
 
-z3::expr_vector vec_bit_reversal(z3::expr_vector x, z3::context &ctx, z3::solver &s)
+std::vector<int> vec_bit_reversal(std::vector<int> x, z3::context &ctx, z3::solver &s)
 {
     // Declare zero
     z3::expr zero = ctx.bv_val(0, 32);
@@ -262,22 +261,26 @@ z3::expr_vector vec_bit_reversal(z3::expr_vector x, z3::context &ctx, z3::solver
     z3::expr mod_val = mod(eN, two, ctx, s); 
     s.add(mod_val == zero);
     //----------------------------------------------
+    
+    // Make int vector of size N
+    std::vector<int> ivec_rev(N);
 
     // Prefill with zero
-    z3::expr_vector vec_reversed(ctx);
     size_t k;
     for (k = 0; k < N; k++)
     {
-       vec_reversed.push_back(zero); 
+       int rev_index = bit_reversal((int)k, (int)N, ctx, s);
+       std::cout << x[k] << std::endl;
+       ivec_rev[rev_index] = x[k]; 
     }
 
-    for (k = 0; k < N; k++)
-    {
-       int reversed_index = bit_reversal((int)k, (int)N, ctx, s);
-       vec_reversed[reversed_index] = x[k]; 
-    }
+    //---------- Add constraint to solver----------
+    // Ensure the same size as N
+    z3::expr evec_rev_size = ctx.bv_val(static_cast<int>(ivec_rev.size()), 32);
+    s.add(evec_rev_size == eN);
+    //----------------------------------------------
 
-    return vec_reversed;
+    return ivec_rev;
 }
 
 /*
