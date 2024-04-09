@@ -21,6 +21,7 @@ int main ()
     int mod_value = mod(dividend, modulus, ctx, s);
 
     std::cout << "Mod val: " << mod_value << std::endl;
+    /*
     // Check N-th root calculation 
     int N = 8;
     std::vector<int> vec_temp = make_LUT(N, 15, modulus, ctx, s);
@@ -69,6 +70,7 @@ int main ()
     {
         std::cout << "Unsat" << std::endl;
     }
+    */
 
     return 0;
 }
@@ -90,19 +92,17 @@ int mod(int dividend, int modulus, z3::context &ctx, z3::solver &s)
     // Declare zero
     z3::expr zero = ctx.bv_val(0, 32);
 
-    // "Bool" for negative
-    z3::expr is_negative = edividend < zero;
-
     int idividend = dividend;
 
     if(dividend < 0)
     {
+
         idividend += modulus;
-        s.add(is_negative == 1);
+        s.add(edividend < zero);
     }
     else
     {
-        s.add(is_negative == 0);
+        s.add(edividend >= zero);
     }
 
     int iremainder = idividend % modulus;
@@ -114,7 +114,7 @@ int mod(int dividend, int modulus, z3::context &ctx, z3::solver &s)
     s.add(eremainder >= zero);
 
     // remainders must never be above the modulus
-    s.add(eremainder < modulus);
+    s.add(eremainder < emodulus);
 
     return iremainder;
 }
