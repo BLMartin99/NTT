@@ -26,7 +26,7 @@ int main ()
     int N = 8;
     z3::expr root_of_unity = ctx.bv_const("root_of_unity", 32);
     root_of_unity = ctx.bv_val(15, 32);
-    z3::expr_vector vec_temp = make_LUT(N, root_of_unity, modulus, ctx, s);
+    z3::expr_vector vec_temp = make_LUT(N, 15, modulus, ctx, s);
 
     // Check bit reversal
     z3::expr temp1 = ctx.bv_const("temp1", 32);
@@ -89,16 +89,16 @@ z3::expr mod(z3::expr dividend, z3::expr modulus, z3::context &ctx, z3::solver &
     z3::expr zero = ctx.bv_val(0, 32);
 
     // "Bool" for negative
-    z3::expr is_negative = dividend < zero;
+    z3::expr is_negative = edividend < zero;
 
     // If negative dividend then add by modulus else just dividend 
-    z3::expr adjusted_dividend = ite(is_negative, dividend + modulus, dividend);
+    z3::expr adjusted_edividend = ite(is_negative, edividend + emodulus, edividend);
 
     // Get quotient 
-    z3::expr quotient = adjusted_dividend / modulus;
+    z3::expr equotient = adjusted_edividend / emodulus;
 
     // Get remainder
-    z3::expr remainder = adjusted_dividend - quotient * modulus;
+    z3::expr eremainder = adjusted_edividend - quotient * modulus;
 
     //---------- Add constraints to solver----------
 
@@ -114,43 +114,45 @@ z3::expr mod(z3::expr dividend, z3::expr modulus, z3::context &ctx, z3::solver &
 /*
  * Returns a lookup table of the Nth roots of unity.
  */
-z3::expr_vector make_LUT(int N, z3::expr root_of_unity, z3::expr modulus, z3::context &ctx, z3::solver &s)
+z3::expr_vector make_LUT(int N, int root_of_unity, z3::expr modulus, z3::context &ctx, z3::solver &s)
 {
     // Create lookup table and add it to the context
-    z3::expr_vector LUT(ctx);
+    z3::expr_vector eLUT(ctx);
 
     // Declare one
     z3::expr one = ctx.bv_val(1, 32);
 
-    // Iterate for the N-th root of unity
-    int k;
-    LUT.push_back(one);
-    for(k = 1; k < N; k++)
-    {
-        z3::expr value = LUT[k-1] * root_of_unity;
-        z3::expr mod_value = mod(value, modulus, ctx, s);
-        LUT.push_back(mod_value);  
-    }
+    // Expression to hold log base 2 of N (workaround to get into expr form)
+    z3::expr eroot_of_unity = ctx.bv_val(static_cast<int>(root_of_unity), 32);
 
     //---------- Add constraints to solver----------
-    
+    // Iterate for the N-th root of unity
+    int k;
+    eLUT.push_back(one);
+    for(k = 1; k < N; k++)
+    {
+        z3::expr value = eLUT[k-1] * eroot_of_unity;
+        z3::expr mod_value = mod(value, modulus, ctx, s);
+        eLUT.push_back(mod_value);  
+    }
+
     // Check that LUT is the given size N
-    z3::expr lut_size = ctx.int_val(LUT.size());
+    z3::expr lut_size = ctx.int_val(eLUT.size());
     z3::expr req_size = ctx.int_val(N);
     s.add(lut_size == req_size);
 
     // Check that the pattern repeats for the next Nth roots
-    z3::expr temp_value = mod(LUT[k-1]*root_of_unity, modulus, ctx, s);
-    s.add(temp_value == LUT[0]);
+    z3::expr temp_value = mod(eLUT[k-1]*eroot_of_unity, modulus, ctx, s);
+    s.add(temp_value == eLUT[0]);
     
     int i;
     for(i = 1; i < N; i++)
     {
-        temp_value = mod(temp_value*root_of_unity, modulus, ctx, s); 
-        s.add(temp_value == LUT[i]);
+        temp_value = mod(temp_value*eroot_of_unity, modulus, ctx, s); 
+        s.add(temp_value == eLUT[i]);
     }
     
-    return LUT;
+    return eLUT;
 }
 
 /*

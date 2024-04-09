@@ -6,7 +6,7 @@
 #include <z3++.h>
 
 z3::expr mod(z3::expr dividend, z3::expr modulus, z3::context &ctx, z3::solver &s); 
-z3::expr_vector make_LUT(int N, z3::expr root_of_unity, z3::expr modulus, z3::context &ctx, z3::solver &s);
+z3::expr_vector make_LUT(int N, int root_of_unity, z3::expr modulus, z3::context &ctx, z3::solver &s);
 int bit_reversal(int num, int N, z3::context &ctx, z3::solver &s);
 std::vector<int> vec_bit_reversal(std::vector<int> x, z3::context &ctx, z3::solver &s);
 /*
