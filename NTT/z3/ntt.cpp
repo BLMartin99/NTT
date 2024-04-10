@@ -21,7 +21,6 @@ int main ()
     int mod_value = mod(dividend, modulus, ctx, s);
 
     std::cout << "Mod val: " << mod_value << std::endl;
-    /*
     // Check N-th root calculation 
     int N = 8;
     std::vector<int> vec_temp = make_LUT(N, 15, modulus, ctx, s);
@@ -37,6 +36,7 @@ int main ()
         x.push_back(j+1);
     }
     std::vector<int> vec_br = vec_bit_reversal(x, ctx, s);
+
 
     if (s.check() == z3::sat)
     {
@@ -70,7 +70,6 @@ int main ()
     {
         std::cout << "Unsat" << std::endl;
     }
-    */
 
     return 0;
 }
@@ -127,12 +126,15 @@ std::vector<int> make_LUT(int N, int root_of_unity, int modulus, z3::context &ct
     // Make LUT
     std::vector<int> iLUT(N);
     int k;
-    iLUT.push_back(1);
+    iLUT[0] = 1;
     for(k = 1; k < N; k++)
     {
+        std::cout << "LUT: " << iLUT[k-1] << " root: " << root_of_unity << std::endl;
         int value = iLUT[k-1] * root_of_unity;
+        std::cout << "val: " << value << std::endl;
         int mod_value = mod(value, modulus, ctx, s);
-        iLUT.push_back(mod_value);  
+        std::cout << "mod val: " << mod_value << std::endl;
+        iLUT[k] = mod_value;  
     }
 
     //---------- Add constraints to solver----------
@@ -320,7 +322,6 @@ std::vector<int> vec_bit_reversal(std::vector<int> x, z3::context &ctx, z3::solv
 
     return ivec_rev;
 }
-
 /*
 vec_num_t ntt_LUT (vec_num_t x, uint32_t root_of_unity, uint32_t modulus)
 {
