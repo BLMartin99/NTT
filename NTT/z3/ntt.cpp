@@ -38,6 +38,7 @@ int main ()
     std::vector<int> vec_br = vec_bit_reversal(x, ctx, s);
 
 
+    std::vector<int> vec_ntt = ntt_LUT (x, 15, 17, ctx, s);
     if (s.check() == z3::sat)
     {
         std::cout << "Sat" << std::endl;
@@ -61,6 +62,13 @@ int main ()
         for(i = 0; i < vec_br.size(); i++)
         {
             int val = vec_br[i];
+            std::cout << "Index: " << i << " val: " << val << std::endl;
+        }
+        
+        std::cout << "NTT result: " << std::endl;
+        for(i = 0; i < vec_ntt.size(); i++)
+        {
+            int val = vec_ntt[i];
             std::cout << "Index: " << i << " val: " << val << std::endl;
         }
 
@@ -322,34 +330,48 @@ std::vector<int> vec_bit_reversal(std::vector<int> x, z3::context &ctx, z3::solv
 
     return ivec_rev;
 }
-/*
-vec_num_t ntt_LUT (vec_num_t x, uint32_t root_of_unity, uint32_t modulus)
+
+std::vector<int> ntt_LUT (std::vector<int> x, int root_of_unity, int modulus, z3::context &ctx, z3::solver &s)
 {
+    // Declare zero
+    z3::expr zero = ctx.bv_val(0, 32);
+
     // Get size N
     size_t N = x.size();
 
-    if(N % 2 != 0)
-    {
-        std::cout << "Sample size should be an even number" << std::endl;
-        std::terminate();
-    }
+    //---------- Add constraints to solver----------
+
+    // Expression to hold N (workaround to get into expr form)
+    z3::expr eN = ctx.bv_val(static_cast<int>(N), 32);
+
+    // Make sure N is greater than zero
+    s.add(eN > zero);
+
+    // Make sure N is even
+    int imod_val = mod(N, 2, ctx, s); 
+
+    // Expression to hold imod_val (workaround to get into expr form)
+    z3::expr emod_val = ctx.bv_val(static_cast<int>(imod_val), 32);
+
+    s.add(emod_val == zero);
+    //----------------------------------------------
 
     // Log2(N)
     size_t log2N = log2(N);
 
-    // Bit reverse a
-    vec_num_t A = vec_bit_reversal(x);
+    // Bit reverse x 
+    std::vector<int> X = vec_bit_reversal(x, ctx, s);
 
     // Make LUT for w
-    vec_num_t LUT = make_LUT(N, root_of_unity, modulus);
+    std::vector<int> LUT = make_LUT(N, root_of_unity, modulus, ctx, s);
 
     size_t m; 
     size_t w_m; 
     size_t w; 
     size_t j; 
     size_t k; 
-    uint32_t t;
-    uint32_t u;
+    int t;
+    int u;
 
     for(m = 2; m <= N; m*=2)
     {
@@ -357,15 +379,14 @@ vec_num_t ntt_LUT (vec_num_t x, uint32_t root_of_unity, uint32_t modulus)
         {
             for(k = 0; k < N; k+=m)
             {
-                t = mod(LUT[j*N/m]*A[k+j+m/2], modulus);
-                u = mod(A[k+j], modulus);
-                A[k+j] = mod(u + t, modulus);
-                A[k+j+m/2] = mod(u - t, modulus);
+                t = mod(LUT[j*N/m]*X[k+j+m/2], modulus, ctx, s);
+                u = mod(X[k+j], modulus, ctx, s);
+                X[k+j] = mod(u + t, modulus, ctx, s);
+                X[k+j+m/2] = mod(u - t, modulus, ctx, s);
                 // std::cout << "m: " << m << " j: " << j << " k: " << k << " w " << LUT[j*N/m] << " t: " << t << " u: " << u << " u + t: " << mod(u+t, modulus) << " u - t: " << mod(u-t, modulus) << " A[k+j] = A[" << k+j << "] = " <<  mod(u+t, modulus) << " A[k+j+m/2] = A[" << k+j+m/2 << "] = " << mod(u-t, modulus) << std::endl;
 
             }
         }
     }
-    return A;
+    return X;
 }
-*/
