@@ -9,70 +9,25 @@ int main ()
 
     z3::solver s(ctx);
 
-    // 8-bit bit-vector -- allow -128 to 127
-    // Set to a 8-bit value -15
-    int dividend = 4;
+    // Input vector
+    std::vector<int> x = {1, 2, 3, 4, 5, 6, 7, 8}; 
 
-    // 8-bit bit-vector -- allow -128 to 127
-    int modulus = 17;
-    // Set to a 8-bit value
-
-    // Call mod
-    int mod_value = mod(dividend, modulus, ctx, s);
-
-    std::cout << "Mod val: " << mod_value << std::endl;
-    // Check N-th root calculation 
-    int N = 8;
-    std::vector<int> vec_temp = make_LUT(N, 15, modulus, ctx, s);
-
-    // Check bit reversal
-    int temp1_br = bit_reversal(3, N, ctx, s);
-
-    // Check bit reversal vector
-    std::vector<int> x; 
-    int j;
-    for(j = 0; j < N; j++)
-    {
-        x.push_back(j+1);
-    }
-    std::vector<int> vec_br = vec_bit_reversal(x, ctx, s);
-
-
+    // NTT call
     std::vector<int> vec_ntt = ntt_LUT (x, 15, 17, ctx, s);
+
+    // Check if SAT
     if (s.check() == z3::sat)
     {
         std::cout << "Sat" << std::endl;
         z3::model m = s.get_model();
-        int result_mod = mod_value;
 
-        std::cout << "Result of " << dividend << " % " << modulus << " using mod: " << result_mod << std::endl;
-
-        
-        std::cout << "Result of make_LUT:" << std::endl;
-        std::cout << "Size of make_LUT: " << vec_temp.size() << std::endl;
         int i;
-        for(i = 0; i < vec_temp.size(); i++)
-        {
-            int val = vec_temp[i];
-            std::cout << "Index: " << i << " root of unity " << val << std::endl;
-        }
-
-        std::cout << temp1_br << std::endl;
-
-        for(i = 0; i < vec_br.size(); i++)
-        {
-            int val = vec_br[i];
-            std::cout << "Index: " << i << " val: " << val << std::endl;
-        }
-        
         std::cout << "NTT result: " << std::endl;
         for(i = 0; i < vec_ntt.size(); i++)
         {
             int val = vec_ntt[i];
             std::cout << "Index: " << i << " val: " << val << std::endl;
         }
-
-
     }
     else
     {
@@ -137,11 +92,8 @@ std::vector<int> make_LUT(int N, int root_of_unity, int modulus, z3::context &ct
     iLUT[0] = 1;
     for(k = 1; k < N; k++)
     {
-        std::cout << "LUT: " << iLUT[k-1] << " root: " << root_of_unity << std::endl;
         int value = iLUT[k-1] * root_of_unity;
-        std::cout << "val: " << value << std::endl;
         int mod_value = mod(value, modulus, ctx, s);
-        std::cout << "mod val: " << mod_value << std::endl;
         iLUT[k] = mod_value;  
     }
 
@@ -288,6 +240,10 @@ int bit_reversal(int num, int N, z3::context &ctx, z3::solver &s)
     return ireverse;
 }
 
+/*
+ * This returns a vector of the original values in x placed 
+ * at the bit reverse of their original indices.
+ */
 std::vector<int> vec_bit_reversal(std::vector<int> x, z3::context &ctx, z3::solver &s)
 {
     // Declare zero
@@ -318,7 +274,6 @@ std::vector<int> vec_bit_reversal(std::vector<int> x, z3::context &ctx, z3::solv
     for (k = 0; k < N; k++)
     {
        int rev_index = bit_reversal((int)k, (int)N, ctx, s);
-       std::cout << x[k] << std::endl;
        ivec_rev[rev_index] = x[k]; 
     }
 
@@ -331,6 +286,9 @@ std::vector<int> vec_bit_reversal(std::vector<int> x, z3::context &ctx, z3::solv
     return ivec_rev;
 }
 
+/*
+ * Runs the NTT algorithm in a hardware-based style using LUTs.
+ */
 std::vector<int> ntt_LUT (std::vector<int> x, int root_of_unity, int modulus, z3::context &ctx, z3::solver &s)
 {
     // Declare zero
@@ -383,8 +341,6 @@ std::vector<int> ntt_LUT (std::vector<int> x, int root_of_unity, int modulus, z3
                 u = mod(X[k+j], modulus, ctx, s);
                 X[k+j] = mod(u + t, modulus, ctx, s);
                 X[k+j+m/2] = mod(u - t, modulus, ctx, s);
-                // std::cout << "m: " << m << " j: " << j << " k: " << k << " w " << LUT[j*N/m] << " t: " << t << " u: " << u << " u + t: " << mod(u+t, modulus) << " u - t: " << mod(u-t, modulus) << " A[k+j] = A[" << k+j << "] = " <<  mod(u+t, modulus) << " A[k+j+m/2] = A[" << k+j+m/2 << "] = " << mod(u-t, modulus) << std::endl;
-
             }
         }
     }
