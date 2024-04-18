@@ -19,7 +19,6 @@ int main ()
     if (s.check() == z3::sat)
     {
         std::cout << "Sat" << std::endl;
-        z3::model m = s.get_model();
 
         int i;
         std::cout << "NTT result: " << std::endl;
