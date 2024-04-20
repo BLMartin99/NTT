@@ -11,16 +11,20 @@ int main ()
 
     // Input vector
     std::vector<int> x = {1, 2, 3, 4, 5, 6, 7, 8}; 
+    //std::vector<int> x = {1, 2, 3, 4, 3, 2, 1, 0};
+    int i; 
+
 
     // NTT call
-    std::vector<int> vec_ntt = ntt_LUT (x, 15, 17, ctx, s);
+    std::vector<int> vec_ntt = ntt_LUT (x, 9, 17, ctx, s);
+    std::vector<int> vec_naive_ntt = ntt_naive(x,9,17,ctx,s);
 
     // Check if SAT
     if (s.check() == z3::sat)
     {
         std::cout << "Sat" << std::endl;
 
-        int i;
+        
         std::cout << "NTT result: " << std::endl;
         for(i = 0; i < vec_ntt.size(); i++)
         {
@@ -129,7 +133,7 @@ std::vector<int> make_LUT(int N, int root_of_unity, int modulus, z3::context &ct
     s.add(lut_size == req_size);
 
     // Check that the pattern repeats for the next Nth roots
-    int itemp_value = mod(iLUT[k-1]*root_of_unity, modulus, ctx, s);
+    int itemp_value = mod(iLUT[N-1]*root_of_unity, modulus, ctx, s);
     z3::expr etemp_value = ctx.bv_val(static_cast<int>(itemp_value), 32);
     z3::expr iindex_value = ctx.bv_val(static_cast<int>(iLUT[0]), 32);
     s.add(etemp_value == iindex_value);
@@ -345,3 +349,34 @@ std::vector<int> ntt_LUT (std::vector<int> x, int root_of_unity, int modulus, z3
     }
     return X;
 }
+
+std::vector<int> ntt_naive (std::vector<int> x, int root_of_unity, int modulus, z3::context &ctx, z3::solver &s)
+{
+
+
+    // Get size N
+    size_t N = x.size();
+    int m_n; 
+    int w_m; 
+    int j_n;
+    int temp_X_n=0;
+    int w_m_pow=0;
+    w_m= root_of_unity;
+    std::vector<int> X_n;
+    //Naive implementation of NTT
+    for(m_n = 1; m_n <= N; m_n++)
+    {
+        for(j_n = 1; j_n <= N; j_n++)
+        {
+            w_m_pow=std::pow(w_m,(((m_n-1)*(j_n-1))% N));
+            w_m_pow=w_m_pow % modulus;
+            temp_X_n+= (x[j_n-1]*w_m_pow); 
+        }
+        temp_X_n= temp_X_n % modulus;
+        X_n.push_back(temp_X_n);
+        temp_X_n=0;
+    }
+
+    return X_n;
+}
+
