@@ -15,8 +15,10 @@ int main ()
     int i; 
 
 
-    // NTT call
+    // NTT iterative call
     std::vector<int> vec_ntt = ntt_LUT (x, 9, 17, ctx, s);
+
+    //NTT naive call
     std::vector<int> vec_naive_ntt = ntt_naive(x,9,17,ctx,s);
 
     // Check if SAT
@@ -132,7 +134,7 @@ std::vector<int> make_LUT(int N, int root_of_unity, int modulus, z3::context &ct
     z3::expr req_size = ctx.bv_val(static_cast<int>(N), 32);
     s.add(lut_size == req_size);
 
-    // Check that the pattern repeats for the next Nth roots
+    // Check powers of nth roots of unity is cyclic
     int itemp_value = mod(iLUT[N-1]*root_of_unity, modulus, ctx, s);
     z3::expr etemp_value = ctx.bv_val(static_cast<int>(itemp_value), 32);
     z3::expr iindex_value = ctx.bv_val(static_cast<int>(iLUT[0]), 32);
