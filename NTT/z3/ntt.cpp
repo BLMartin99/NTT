@@ -31,11 +31,13 @@ int main ()
     {
         std::cout << "Sat" << std::endl;
 
+        // Build model
+        z3::model m = s.get_model();
         
         std::cout << "NTT result: " << std::endl;
         for(int i = 0; i < vec_ntt.size(); i++)
         {
-            std::cout << "Index: " << i << " val: " << vec_ntt[i] << std::endl;
+            std::cout << "Index: " << i << " val: " << m.eval(vec_ntt[i]) << std::endl;
         }
     }
     else
