@@ -18,6 +18,14 @@ int main ()
     // NTT naive call -- software implementation
     z3::expr_vector vec_naive_ntt = ntt_naive(x, 15, 17, ctx, s);
 
+    
+    //---------- Add constraints to solver----------
+    // Check that Hardware implementation results match software implementation results
+    for(int i = 0; i < vec_ntt.size(); i++)
+    {
+        s.add(vec_ntt[i] == vec_naive_ntt[i]);
+    }
+
     // Check if SAT
     if (s.check() == z3::sat)
     {
