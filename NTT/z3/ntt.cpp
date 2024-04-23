@@ -11,15 +11,12 @@ int main ()
 
     // Input vector
     std::vector<int> x = {1, 2, 3, 4, 5, 6, 7, 8}; 
-    //std::vector<int> x = {1, 2, 3, 4, 3, 2, 1, 0};
-    int i; 
-
-
+     
     // NTT iterative call
-    std::vector<int> vec_ntt = ntt_LUT (x, 9, 17, ctx, s);
+    z3::expr_vector vec_ntt = ntt_LUT (x, 15, 17, ctx, s);
 
     //NTT naive call
-    std::vector<int> vec_naive_ntt = ntt_naive(x,9,17,ctx,s);
+    std::vector<int> vec_naive_ntt = ntt_naive(x, 15, 17, ctx, s);
 
     // Check if SAT
     if (s.check() == z3::sat)
@@ -28,10 +25,9 @@ int main ()
 
         
         std::cout << "NTT result: " << std::endl;
-        for(i = 0; i < vec_ntt.size(); i++)
+        for(int i = 0; i < vec_ntt.size(); i++)
         {
-            int val = vec_ntt[i];
-            std::cout << "Index: " << i << " val: " << val << std::endl;
+            std::cout << "Index: " << i << " val: " << vec_ntt[i] << std::endl;
         }
     }
     else
@@ -294,8 +290,11 @@ std::vector<int> vec_bit_reversal(std::vector<int> x, z3::context &ctx, z3::solv
 /*
  * Runs the NTT algorithm in a hardware-based style using LUTs.
  */
-std::vector<int> ntt_LUT (std::vector<int> x, int root_of_unity, int modulus, z3::context &ctx, z3::solver &s)
+z3::expr_vector ntt_LUT (std::vector<int> x, int root_of_unity, int modulus, z3::context &ctx, z3::solver &s)
 {
+    // Return expression vector 
+    z3::expr_vector eX(ctx);
+
     // Declare zero
     z3::expr zero = ctx.bv_val(0, 32);
 
@@ -349,13 +348,22 @@ std::vector<int> ntt_LUT (std::vector<int> x, int root_of_unity, int modulus, z3
             }
         }
     }
-    return X;
+
+    for(j = 0; j < N; j++)
+    {
+        z3::expr temp = ctx.bv_val(static_cast<unsigned int>(X[j]), 32);
+        eX.push_back(temp);
+    }
+
+    return eX;
 }
+
+/*
+ * Runs the NTT algorithm in a software-based style.
+ */
 
 std::vector<int> ntt_naive (std::vector<int> x, int root_of_unity, int modulus, z3::context &ctx, z3::solver &s)
 {
-
-
     // Get size N
     size_t N = x.size();
     int m_n; 
