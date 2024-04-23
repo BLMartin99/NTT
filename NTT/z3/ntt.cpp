@@ -12,11 +12,11 @@ int main ()
     // Input vector
     std::vector<int> x = {1, 2, 3, 4, 5, 6, 7, 8}; 
      
-    // NTT iterative call
+    // NTT iterative call -- hardware implementation
     z3::expr_vector vec_ntt = ntt_LUT (x, 15, 17, ctx, s);
 
-    //NTT naive call
-    std::vector<int> vec_naive_ntt = ntt_naive(x, 15, 17, ctx, s);
+    // NTT naive call -- software implementation
+    z3::expr_vector vec_naive_ntt = ntt_naive(x, 15, 17, ctx, s);
 
     // Check if SAT
     if (s.check() == z3::sat)
@@ -362,8 +362,11 @@ z3::expr_vector ntt_LUT (std::vector<int> x, int root_of_unity, int modulus, z3:
  * Runs the NTT algorithm in a software-based style.
  */
 
-std::vector<int> ntt_naive (std::vector<int> x, int root_of_unity, int modulus, z3::context &ctx, z3::solver &s)
+z3::expr_vector ntt_naive (std::vector<int> x, int root_of_unity, int modulus, z3::context &ctx, z3::solver &s)
 {
+    // Return expression vector 
+    z3::expr_vector eX_n(ctx);
+
     // Get size N
     size_t N = x.size();
     int m_n; 
@@ -387,6 +390,13 @@ std::vector<int> ntt_naive (std::vector<int> x, int root_of_unity, int modulus, 
         temp_X_n=0;
     }
 
-    return X_n;
+    for(int j = 0; j < N; j++)
+    {
+        z3::expr temp = ctx.bv_val(static_cast<unsigned int>(X_n[j]), 32);
+        eX_n.push_back(temp);
+    }
+
+
+    return eX_n;
 }
 
